@@ -22,13 +22,13 @@ npx hardhat test
 ## Deploy (minimal constructor variant)
 ```bash
 # Set MOC_STATE in .env or export it inline
-npm run deploy:sepolia
+npm run deploy:rootstock:testnet
 ```
 
 ## Deploy (governed initializer variant)
 ```bash
 # Make sure GOVERNOR is set in .env
-npm run deploy:sepolia:gov
+npm run deploy:rootstock:testnet:gov
 ```
 
 ## Notes
