@@ -60,8 +60,39 @@ npm run verify:rootstock -- <contract-address> <ctor-args...>
 
 **Testnet**
 ```
-npx hardhat verify --network rootstockTestnet   0xEb1ceb9E2d9544e5Fb9ea629816ff181398451E2   0x0adb40132cB0ffcEf6ED81c26A1881e214100555
+npx hardhat verify --network rootstockTestnet   0x6A40d19DA7d5DAc4b6102d622fbbb69367892658   0x0adb40132cB0ffcEf6ED81c26A1881e214100555
 ```
+
+Result:
+
+```
+Successfully submitted source code for contract
+contracts/BproUsdAggregatorV2Minimal.sol:BproUsdAggregatorV2Minimal at 0x6A40d19DA7d5DAc4b6102d622fbbb69367892658
+for verification on the block explorer. Waiting for verification result...
+
+Successfully verified contract BproUsdAggregatorV2Minimal on the block explorer.
+https://rootstock-testnet.blockscout.com/address/0x6A40d19DA7d5DAc4b6102d622fbbb69367892658#code
+```
+
+
+
+**Mainnet**
+```
+npx hardhat verify --network rootstock 0xC4F0392ae65EBcC5Bdbe6fEDE84E81586096e741 0xb9C42EFc8ec54490a37cA91c423F7285Fa01e257
+```
+
+Result:
+
+```
+Successfully submitted source code for contract
+contracts/BproUsdAggregatorV2Minimal.sol:BproUsdAggregatorV2Minimal at 0xC4F0392ae65EBcC5Bdbe6fEDE84E81586096e741
+for verification on the block explorer. Waiting for verification result...
+
+Successfully verified contract BproUsdAggregatorV2Minimal on the block explorer.
+https://rootstock.blockscout.com/address/0xC4F0392ae65EBcC5Bdbe6fEDE84E81586096e741#code
+```
+
+
 
 **Notes**
 - Rootstock is not EIP-1559. We set an explicit `gasPrice` in the network config to avoid underpriced txs.
@@ -70,5 +101,5 @@ npx hardhat verify --network rootstockTestnet   0xEb1ceb9E2d9544e5Fb9ea629816ff1
 
 3. Contracts
 
-Testnet: 0xEb1ceb9E2d9544e5Fb9ea629816ff181398451E2
+Testnet - BproUsdAggregatorV2Minimal: 0xEb1ceb9E2d9544e5Fb9ea629816ff181398451E2
 Mainnet:

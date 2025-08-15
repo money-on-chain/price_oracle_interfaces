@@ -3,6 +3,9 @@ pragma solidity 0.8.24;
 
 import {Governed} from "./governance/Governed.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import { SafeCastUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
+import {AddressUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+
 
 interface IMoCState {
   function bproUsdPrice() external view returns (uint256);
@@ -17,10 +20,13 @@ interface AggregatorV2Minimal {
  * @notice Chainlink V2-only adapter (latestAnswer) with UUPS upgrades governed by Areopagus.
  */
 contract BproUsdAggregatorV2Governed is AggregatorV2Minimal, Governed, UUPSUpgradeable {
+
+  using SafeCastUpgradeable for uint256;
+
   IMoCState public mocState;
 
-  // Max uint that still fits into int256 (2^255 - 1)
-  uint256 private constant INT256_MAX = (2**255 - 1);
+  event MoCStateChanged(address indexed previous, address indexed current);
+  
 
   /// @custom:oz-upgrades-unsafe-allow constructor
   constructor() {
@@ -48,6 +54,7 @@ contract BproUsdAggregatorV2Governed is AggregatorV2Minimal, Governed, UUPSUpgra
    */
   function setMoCState(address _mocState) external onlyAuthorizedChanger {
     require(_mocState != address(0), "mocState address is zero");
+    emit MoCStateChanged(address(mocState), _mocState);
     mocState = IMoCState(_mocState);
   }
 
@@ -55,20 +62,20 @@ contract BproUsdAggregatorV2Governed is AggregatorV2Minimal, Governed, UUPSUpgra
    * @notice Chainlink V2-only: returns the latest price as int256.
    */
   function latestAnswer() external view returns (int256) {
-    uint256 raw = mocState.bproUsdPrice();
-    require(raw <= INT256_MAX, "overflow int256");
-    return int256(raw);
+    return mocState.bproUsdPrice().toInt256();
   }
 
   /**
    * @dev UUPS authorization hook — REQUIRED.
    * Lock upgrades behind governance (authorized changers).
    */
-  function _authorizeUpgrade(address /*newImplementation*/)
+  function _authorizeUpgrade(address newImplementation)
     internal
     override
     onlyAuthorizedChanger
-  {}
+  {
+    //require(AddressUpgradeable.isContract(newImplementation), "UUPS: not a contract");
+  }
 
   // Reserved storage for future upgrades
   uint256[50] private __gap;
