@@ -60,36 +60,36 @@ npm run verify:rootstock -- <contract-address> <ctor-args...>
 
 **Testnet**
 ```
-npx hardhat verify --network rootstockTestnet   0x6A40d19DA7d5DAc4b6102d622fbbb69367892658   0x0adb40132cB0ffcEf6ED81c26A1881e214100555
+npx hardhat verify --network rootstockTestnet 0xFfbEe1089b1ad5f31c92aFf9918e668e1a15C22A 0x0adb40132cB0ffcEf6ED81c26A1881e214100555
 ```
 
 Result:
 
 ```
 Successfully submitted source code for contract
-contracts/BproUsdAggregatorV2Minimal.sol:BproUsdAggregatorV2Minimal at 0x6A40d19DA7d5DAc4b6102d622fbbb69367892658
+contracts/BproUsdAggregatorV2Minimal.sol:BproUsdAggregatorV2Minimal at 0xFfbEe1089b1ad5f31c92aFf9918e668e1a15C22A
 for verification on the block explorer. Waiting for verification result...
 
 Successfully verified contract BproUsdAggregatorV2Minimal on the block explorer.
-https://rootstock-testnet.blockscout.com/address/0x6A40d19DA7d5DAc4b6102d622fbbb69367892658#code
+https://rootstock-testnet.blockscout.com/address/0xFfbEe1089b1ad5f31c92aFf9918e668e1a15C22A#code
 ```
 
 
 
 **Mainnet**
 ```
-npx hardhat verify --network rootstock 0xC4F0392ae65EBcC5Bdbe6fEDE84E81586096e741 0xb9C42EFc8ec54490a37cA91c423F7285Fa01e257
+npx hardhat verify --network rootstock 0x81786368C1BD435559099ea1c18992529accd3F8 0xb9C42EFc8ec54490a37cA91c423F7285Fa01e257
 ```
 
 Result:
 
 ```
 Successfully submitted source code for contract
-contracts/BproUsdAggregatorV2Minimal.sol:BproUsdAggregatorV2Minimal at 0xC4F0392ae65EBcC5Bdbe6fEDE84E81586096e741
+contracts/BproUsdAggregatorV2Minimal.sol:BproUsdAggregatorV2Minimal at 0x81786368C1BD435559099ea1c18992529accd3F8
 for verification on the block explorer. Waiting for verification result...
 
 Successfully verified contract BproUsdAggregatorV2Minimal on the block explorer.
-https://rootstock.blockscout.com/address/0xC4F0392ae65EBcC5Bdbe6fEDE84E81586096e741#code
+https://rootstock.blockscout.com/address/0x81786368C1BD435559099ea1c18992529accd3F8#code
 ```
 
 
