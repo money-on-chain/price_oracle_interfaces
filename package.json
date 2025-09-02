@@ -37,19 +37,8 @@
     "format:fix": "prettier . --write",
     "fix:all": "eslint . --ext .ts,.tsx,.js,.cjs,.mjs --fix && prettier . --write",
     "check:all": "eslint . --ext .ts,.tsx,.js,.cjs,.mjs && prettier . --check",
-    "deploy:alpha-testnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/deploy.js --network rskAlphaTestnet",
-    "deploy:testnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/deploy.js --network rskTestnet",
-    "deploy:mainnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/deploy.js --network rskMainnet",
-    "validate:prevote:alpha-testnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/validate_prevote.js --network rskAlphaTestnet",
-    "validate:prevote:testnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/validate_prevote.js --network rskTestnet",
-    "validate:prevote:mainnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/validate_prevote.js --network rskMainnet",
-    "verify:alpha-testnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/verify.js --network rskAlphaTestnet",
-    "verify:testnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/verify.js --network rskTestnet",
-    "verify:mainnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/verify.js --network rskMainnet",
-    "validate:aftervote:alpha-testnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/validate_aftervote.js --network rskAlphaTestnet",
-    "validate:aftervote:testnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/validate_aftervote.js --network rskTestnet",
-    "validate:aftervote:mainnet:fees-and-bitprorate": "npx hardhat run scripts/fees_and_bitprorate/validate_aftervote.js --network rskMainnet",
-    "test:fees-and-bitprorate": "npx hardhat test test/fees_and_bitprorate.spec.js"
+    
+    "test:bprousd_aggregator_v2": "npx hardhat test test/bprousd_aggregator_v2.spec.js"
   },
   "lint-staged": {
     "*.{ts,tsx,js,cjs,mjs}": [
