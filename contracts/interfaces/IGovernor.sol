@@ -11,18 +11,18 @@ import { IChangeContract } from "./IChangeContract.sol";
   used on Production, from https://github.com/money-on-chain/Areopagus-Governance
   */
 interface IGovernor {
-    /**
+  /**
     @notice Function to be called to make the changes described in changeContract
     @dev This function should be protected somehow to only execute changes that
     benefit the system. This decision process is independent of this architecture
     therefore is independent of this interface too
     @param changeContract_ Address of the contract that will execute the changes
    */
-    function executeChange(IChangeContract changeContract_) external;
+  function executeChange(IChangeContract changeContract_) external;
 
-    /**
+  /**
     @notice Returns whether this `changer_` is authorized to execute changes.
     @param changer_ Address of the contract that will execute the changes
    */
-    function isAuthorizedChanger(address changer_) external view returns (bool);
+  function isAuthorizedChanger(address changer_) external view returns (bool);
 }

@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {Governed} from "./governance/Governed.sol";
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import { SafeCastUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/math/SafeCastUpgradeable.sol";
-import {AddressUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-
+import { Governed } from "./governance/Governed.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import { SafeCast } from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 interface IMoCState {
   function bproUsdPrice() external view returns (uint256);
@@ -20,13 +18,11 @@ interface AggregatorV2Minimal {
  * @notice Chainlink V2-only adapter (latestAnswer) with UUPS upgrades governed by Areopagus.
  */
 contract BproUsdAggregatorV2Governed is AggregatorV2Minimal, Governed, UUPSUpgradeable {
-
-  using SafeCastUpgradeable for uint256;
+  using SafeCast for uint256;
 
   IMoCState public mocState;
 
   event MoCStateChanged(address indexed previous, address indexed current);
-  
 
   /// @custom:oz-upgrades-unsafe-allow constructor
   constructor() {
@@ -69,11 +65,7 @@ contract BproUsdAggregatorV2Governed is AggregatorV2Minimal, Governed, UUPSUpgra
    * @dev UUPS authorization hook — REQUIRED.
    * Lock upgrades behind governance (authorized changers).
    */
-  function _authorizeUpgrade(address newImplementation)
-    internal
-    override
-    onlyAuthorizedChanger
-  {
+  function _authorizeUpgrade(address newImplementation) internal override onlyAuthorizedChanger {
     //require(AddressUpgradeable.isContract(newImplementation), "UUPS: not a contract");
   }
 
