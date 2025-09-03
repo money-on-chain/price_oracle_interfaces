@@ -19,10 +19,10 @@ function selectedNetworkName(hre_) {
 
 function loadConfig(networkName) {
   // 1) DEPLOY_CONFIG_PATH overrides
-  // 2) <repoRoot>/config/fees_and_bitprorate/deployConfig-<network>.json
+  // 2) <repoRoot>/config/dummy/deployConfig-<network>.json
   const cfgPath =
     process.env.DEPLOY_CONFIG_PATH ??
-    path.join(__dirname, `../../config/bprocop/deployConfig-${networkName}.json`);
+    path.join(__dirname, `../../config/dummy/deployConfig-${networkName}.json`);
   if (!fs.existsSync(cfgPath)) throw new Error(`Config not found: ${cfgPath}`);
   const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
   return { cfgPath, cfg };
@@ -42,9 +42,11 @@ function requireKeys(obj, keys, prefix = "") {
 async function main() {
   const net = selectedNetworkName(hre);
   const { cfgPath, cfg } = loadConfig(net);
+  const { ethers } = await hre.network.connect();
+  const toRay = (x) => ethers.parseUnits(String(x), 18);
 
   // Minimal config validation
-  requireKeys(cfg, ["MoCState", "CoinPairPrice", "priceProviderAddress"]);
+  requireKeys(cfg, ["price"]);
 
   // Address to verify (env wins)
   const address = process.env.VERIFY_ADDRESS || cfg.priceProviderAddress;
@@ -53,21 +55,19 @@ async function main() {
   // Build constructor args EXACTLY like deploy.js  
 
   const constructorArgs = [
-    cfg.CoinPairPrice,
-    cfg.MoCState,    
+    toRay(cfg.price),
   ];
 
   // Choose verification provider; "blockscout" is appropriate for Rootstock
   const provider = process.env.VERIFY_PROVIDER || "blockscout";
 
-  console.log("=== Verify CoinPairPriceBproUsdConversion ===");
+  console.log("=== Verify PriceProviderDummy ===");
   console.log("Network         :", net);
   console.log("Config          :", cfgPath);
   console.log("Address         :", address);
   console.log("Provider        :", provider);
   console.log("Constructor args:");
-  console.log("  CoinPairPrice     :", constructorArgs[0]);  
-  console.log("  MoCState     :", constructorArgs[1]);  
+  console.log("  price     :", constructorArgs[0]);  
 
   await verifyContract(
     {

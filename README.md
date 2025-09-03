@@ -205,5 +205,32 @@ npx hardhat test test/CoinPairPriceBproUsdConversion.spec.js
 ```
 
 
+## Price Provider Dummy
+
+return dummy price
+
+
+### Deploy
+
+```bash
+# If you want to change setup see config/dummy/deployConfig-rskTestnet.json
+npx hardhat run scripts/dummy/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+# If you want to change setup see config/dummy/deployConfig-rskTestnet.json
+npx hardhat run scripts/dummy/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+# If you want to change setup see config/dummy/deployConfig-rskTestnet.json
+npx hardhat run scripts/dummy/read-peek.ts --network rskTestnet
+```
+
+
 
 

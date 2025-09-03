@@ -5,15 +5,6 @@ import hre from "hardhat";
 import path from "path";
 import { fileURLToPath } from "url";
 
-/**
- * Verifies BproUsdAggregatorV2Minimal on Blockscout/Etherscan-compatible explorers.
- * Constructor args MUST be built exactly as in deploy.js for byte-for-byte match.
- *
- * Constructor:
- *   constructor(
- *     IMoCState _mocState,     
- *   )
- */
 
 // ---------------------------------------------------------------------------
 // Paths / helpers
