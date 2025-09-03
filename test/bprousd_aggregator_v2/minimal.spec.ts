@@ -1,5 +1,6 @@
-import { expect } from "chai";
 import hre from "hardhat";
+
+import { expect } from "chai";
 
 const { ethers } = await hre.network.connect();
 

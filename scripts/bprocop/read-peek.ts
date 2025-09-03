@@ -7,12 +7,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 
-// Helpers (idénticos a deploy.ts)
+// Helpers (identical to deploy.ts)
 function selectedNetworkName(hre_: any) {
   return hre_.globalOptions?.network ?? process.env.HARDHAT_NETWORK ?? "hardhat";
 }
 function defaultConfigPath(root: string, networkName: string) {
-  return path.join(root, "config", "bprousd_aggregator_v2", `deployConfig-${networkName}.json`);
+  return path.join(root, "config", "bprocop", `deployConfig-${networkName}.json`);
 }
 function resolveConfigPath(hre_: any, root: string) {
   const fromEnv = process.env.DEPLOY_CONFIG_PATH;
@@ -33,26 +33,26 @@ async function main() {
   const cfgPath = resolveConfigPath(hre, repoRoot);
   const cfg = loadConfigOrDie(cfgPath);
 
-  if (!cfg.aggregatorAddress) {
-    throw new Error(`No aggregatorAddress found in config: ${cfgPath}`);
+  if (!cfg.priceProviderAddress) {
+    throw new Error(`No priceProviderAddress found in config: ${cfgPath}`);
   }
 
   console.log("Selected network:", net);
   console.log("Config file:", cfgPath);
-  console.log("Aggregator address:", cfg.aggregatorAddress);
+  console.log("Price provider address:", cfg.priceProviderAddress);
 
   // Attach contract
-  const agg = await ethers.getContractAt("BproUsdAggregatorV2Minimal", cfg.aggregatorAddress);
+  const priceProvider = await ethers.getContractAt("CoinPairPriceBproUsdConversion", cfg.priceProviderAddress);
 
-  const latestAnswer = await agg.latestAnswer();
+  const peek = await priceProvider.peek();
 
-  // Raw int256
-  console.log("latestAnswer (raw int256, 8 decimals):", latestAnswer.toString());
+  // Raw bytes32
+  console.log("Price (raw bytes32, 18 decimals):", peek[0].toString());
 
-  // Formateado humano (dividir por 1e8)
-  const asBigInt = BigInt(latestAnswer.toString());
-  const formatted = Number(asBigInt) / 1e8;
-  console.log("latestAnswer (formatted):", formatted.toFixed(8), "USD");
+  // human-friendly (divide by 1e18)
+  const asBigInt = BigInt(peek[0].toString());
+  const formatted = Number(asBigInt) / 1e18;
+  console.log("Price (formatted):", formatted.toFixed(8), "USD");
 }
 
 main().catch((e) => {
