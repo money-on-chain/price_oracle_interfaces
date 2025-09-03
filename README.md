@@ -234,3 +234,33 @@ npx hardhat run scripts/dummy/read-peek.ts --network rskTestnet
 
 
 
+
+## Price Provider Bpro USD V1
+
+return  Bpro USD V1
+
+
+### Deploy
+
+```bash
+# If you want to change setup see config/bprousdv1/deployConfig-rskTestnet.json
+npx hardhat run scripts/bprousdv1/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+# If you want to change setup see config/bprousdv1/deployConfig-rskTestnet.json
+npx hardhat run scripts/bprousdv1/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+# If you want to change setup see config/bprousdv1/deployConfig-rskTestnet.json
+npx hardhat run scripts/bprousdv1/read-peek.ts --network rskTestnet
+```
+
+
+
+
