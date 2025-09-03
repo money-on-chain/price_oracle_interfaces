@@ -20,8 +20,6 @@ npx hardhat test
 
 ## BPRO/USD Aggregator (Chainlink V2-only)
 
-Ready-to-run Hardhat + TypeScript project:
-
 - **Minimal** (constructor): exposes `latestAnswer()` and reads directly from `IMoCState.bproUsdPrice()`.
 
 ### Test
@@ -52,8 +50,43 @@ npx hardhat run scripts/bprousd_aggregator_v2/verify.js --network rskTestnet
 npx hardhat run scripts/bprousd_aggregator_v2/read-latestAnswer.ts --network rskTestnet
 ```
 
-## Notes
+### Notes
 
 - V2 interface has no `decimals()`. Consumers must know the scale of `bproUsdPrice()` (often 18 decimals).
 - The test uses an inline 0.8.24 mock to assert that `latestAnswer()` mirrors `bproUsdPrice()`.
+
+
+## BPRO/ARS Price Provider
+
+Calculated price provider for BPRO/ARS
+
+### Test
+
+```bash
+# If you want to change setup see config/bproars/deployConfig-rskTestnet.json
+npx hardhat test test/bproars/minimal.spec.js
+```
+
+### Deploy
+
+```bash
+# If you want to change setup see config/bproars/deployConfig-rskTestnet.json
+npx hardhat run scripts/bproars/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+# If you want to change setup see config/bproars/deployConfig-rskTestnet.json
+npx hardhat run scripts/bproars/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+# If you want to change setup see config/bproars/deployConfig-rskTestnet.json
+npx hardhat run scripts/bproars/read-peek.ts --network rskTestnet
+```
+
+
 

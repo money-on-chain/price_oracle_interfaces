@@ -12,7 +12,7 @@ function selectedNetworkName(hre_) {
   return hre_.globalOptions?.network ?? process.env.HARDHAT_NETWORK ?? "hardhat";
 }
 function defaultConfigPath(root, networkName) {
-  return path.join(root, "config", "bprousd_aggregator_v2", `deployConfig-${networkName}.json`);
+  return path.join(root, "config", "bproars", `deployConfig-${networkName}.json`);
 }
 function resolveConfigPath(hre_, root) {
   const fromEnv = process.env.DEPLOY_CONFIG_PATH;
@@ -55,23 +55,27 @@ async function main() {
   assertAddress("MoCState", cfg.MoCState);
   console.log("MoCState:", cfg.MoCState);
 
-  // Deploy
-  const Factory = await ethers.getContractFactory("BproUsdAggregatorV2Minimal");
-  const newAggregator = await Factory.deploy(cfg.MoCState);
-  const rcpt = await newAggregator.deploymentTransaction().wait();
+  assertAddress("CoinPairPrice", cfg.CoinPairPrice);
+  console.log("CoinPairPrice:", cfg.CoinPairPrice);
 
-  console.log("Aggregator deployed at:", newAggregator.target);
+  // Deploy
+  const Factory = await ethers.getContractFactory("CoinPairPriceBproUsdConversion");
+  const priceProvider = await Factory.deploy(cfg.CoinPairPrice, cfg.MoCState);
+  const rcpt = await priceProvider.deploymentTransaction().wait();
+
+  console.log("Coin Pair Price Bpro Usd Conversion deployed at:", priceProvider.target);
   console.log("Gas used:", rcpt.gasUsed.toString());
 
   // Quick read-back (human-friendly getters)
-  const latestAnswer = await newAggregator.latestAnswer();
+  const peek = await priceProvider.peek();
 
-  console.log("latestAnswer: ", latestAnswer);
+  console.log("Price: ", peek[0]);
+  console.log("valid: ", peek[1]);
 
   // Persist address
-  cfg.aggregatorAddress = newAggregator.target;
+  cfg.priceProviderAddress = priceProvider.target;
   fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2));
-  console.log("Config updated with aggregatorAddress.");
+  console.log("Config updated with priceProviderAddress.");
 }
 
 main().catch((e) => {
