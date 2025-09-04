@@ -320,3 +320,28 @@ npx hardhat run scripts/flipbpro/read-peek.ts --network rskTestnet
 
 
 
+## Price Provider Bpro RBTC V1
+
+return  Bpro RBTC V1
+
+
+### Deploy
+
+```bash
+# If you want to change setup see config/bprorbtc/deployConfig-rskTestnet.json
+npx hardhat run scripts/bprorbtc/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+# If you want to change setup see config/bprorbtc/deployConfig-rskTestnet.json
+npx hardhat run scripts/bprorbtc/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+# If you want to change setup see config/bprorbtc/deployConfig-rskTestnet.json
+npx hardhat run scripts/bprorbtc/read-peek.ts --network rskTestnet
+```
