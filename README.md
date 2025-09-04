@@ -263,4 +263,60 @@ npx hardhat run scripts/bprousdv1/read-peek.ts --network rskTestnet
 
 
 
+## Price Provider Flip/USD Mock
+
+return  FLIP/USD Mock
+
+
+### Deploy
+
+```bash
+# If you want to change setup see config/flipusd_mock/deployConfig-rskTestnet.json
+npx hardhat run scripts/flipusd_mock/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+# If you want to change setup see config/flipusd_mock/deployConfig-rskTestnet.json
+npx hardhat run scripts/flipusd_mock/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+# If you want to change setup see config/flipusd_mock/deployConfig-rskTestnet.json
+npx hardhat run scripts/flipusd_mock/read-peek.ts --network rskTestnet
+```
+
+
+
+
+## Price Provider Flip/BPRO
+
+return  FLIP/BPRO
+
+
+### Deploy
+
+```bash
+# If you want to change setup see config/flipbpro/deployConfig-rskTestnet.json
+npx hardhat run scripts/flipbpro/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+# If you want to change setup see config/flipbpro/deployConfig-rskTestnet.json
+npx hardhat run scripts/flipbpro/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+# If you want to change setup see config/flipbpro/deployConfig-rskTestnet.json
+npx hardhat run scripts/flipbpro/read-peek.ts --network rskTestnet
+```
+
+
 
