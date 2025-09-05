@@ -12,7 +12,7 @@ function selectedNetworkName(hre_) {
   return hre_.globalOptions?.network ?? process.env.HARDHAT_NETWORK ?? "hardhat";
 }
 function defaultConfigPath(root, networkName) {
-  return path.join(root, "config", "bprorbtc", `deployConfig-${networkName}.json`);
+  return path.join(root, "config", "usdbtc", `deployConfig-${networkName}.json`);
 }
 function resolveConfigPath(hre_, root) {
   const fromEnv = process.env.DEPLOY_CONFIG_PATH;
@@ -56,11 +56,11 @@ async function main() {
   console.log("MoCState:", cfg.MoCState);
 
   // Deploy
-  const Factory = await ethers.getContractFactory("PriceProviderBproTecV1");
+  const Factory = await ethers.getContractFactory("PriceProviderUsdPerBtc");
   const priceProvider = await Factory.deploy(cfg.MoCState);
   const rcpt = await priceProvider.deploymentTransaction().wait();
 
-  console.log("Price Provider Bpro Tec V1 deployed at:", priceProvider.target);
+  console.log("Price Provider Usd/Btc deployed at:", priceProvider.target);
   console.log("Gas used:", rcpt.gasUsed.toString());
 
   // Quick read-back (human-friendly getters)

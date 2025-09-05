@@ -22,7 +22,7 @@ function loadConfig(networkName) {
   // 2) <repoRoot>/config/fees_and_bitprorate/deployConfig-<network>.json
   const cfgPath =
     process.env.DEPLOY_CONFIG_PATH ??
-    path.join(__dirname, `../../config/bprorbtc/deployConfig-${networkName}.json`);
+    path.join(__dirname, `../../config/bprobtc/deployConfig-${networkName}.json`);
   if (!fs.existsSync(cfgPath)) throw new Error(`Config not found: ${cfgPath}`);
   const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
   return { cfgPath, cfg };

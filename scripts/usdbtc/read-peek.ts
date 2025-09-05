@@ -12,7 +12,7 @@ function selectedNetworkName(hre_: any) {
   return hre_.globalOptions?.network ?? process.env.HARDHAT_NETWORK ?? "hardhat";
 }
 function defaultConfigPath(root: string, networkName: string) {
-  return path.join(root, "config", "bprorbtc", `deployConfig-${networkName}.json`);
+  return path.join(root, "config", "usdbtc", `deployConfig-${networkName}.json`);
 }
 function resolveConfigPath(hre_: any, root: string) {
   const fromEnv = process.env.DEPLOY_CONFIG_PATH;
@@ -42,7 +42,7 @@ async function main() {
   console.log("Price provider address:", cfg.priceProviderAddress);
 
   // Attach contract
-  const priceProvider = await ethers.getContractAt("PriceProviderBproTecV1", cfg.priceProviderAddress);
+  const priceProvider = await ethers.getContractAt("PriceProviderUsdPerBtc", cfg.priceProviderAddress);
 
   const peek = await priceProvider.peek();
 
@@ -52,7 +52,7 @@ async function main() {
   // human-friendly (divide by 1e18)
   const asBigInt = BigInt(peek[0].toString());
   const formatted = Number(asBigInt) / 1e18;
-  console.log("Price (formatted):", formatted.toFixed(8), "RBTC");
+  console.log("Price (formatted):", formatted.toFixed(8), "BTC");
 }
 
 main().catch((e) => {

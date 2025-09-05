@@ -1,6 +1,6 @@
-# Price Oracles Interfaces
+# Price Providers Interfaces
 
-Interfaces to decentralized price oracle.
+Calculated or oracles interfaces
 
 ## Requirements
 
@@ -17,6 +17,24 @@ cp .env.testnet .env
 npx hardhat compile
 npx hardhat test
 ```
+
+## Deployed interfaces
+
+| Interface | Testnet Address                            | Mainnet Address                            | Description |
+|-----------|--------------------------------------------|--------------------------------------------|-------------|
+| BPRO/USD  | 0xde534F6600e582Aa41A0a30f32c51Ab5fe0F8019 |                                            |             |
+| USD/ARS   | 0xCf330C2FE1e8b4980Fb19A310a32E2B119e4c1B1 |                                            |             |
+| USD/COP   | 0x81852EEEA69A20D12A47A257EA4756847527E9E5 |                 |             |
+| BPRO/ARS  | 0x3EdB871332380468ea7c76A9d1E98EdF7d8ef70B |                 |             |
+| BPRO/COP  | 0x790A1b5882b6D8d63fd1fC6a18325B227E166035 |                 |             |
+| FLIP/USD  | 0x780c13c6E3A124C35F2d8bDDf6B54A505A12A358 |                 |             |
+| FLIP/BPRO | 0x56b8C52AE9D2BEfcfE84Dea8BDCb96991400102B |                 |             |
+| BPRO/BTC  | 0xB5f25aCD095e930863799B60a16ed83075BBeB27 |                 |             |
+| USD/BTC   | 0xf57bbB359579e6885aa654a8030688b6db5690dC |                 |             |
+
+
+
+
 
 ## BPRO/USD Aggregator (Chainlink V2-only)
 
@@ -55,7 +73,7 @@ npx hardhat run scripts/bprousd_aggregator_v2/read-latestAnswer.ts --network rsk
 
 
 
-## BPRO/ARS Price Provider
+## Price Provider BPRO/ARS (V1)
 
 `CoinPairPriceBproUsdConversion` is an adapter contract that returns the price of **BPRO denominated in ARS (Argentinian Pesos)**.
 
@@ -134,7 +152,7 @@ npx hardhat test test/CoinPairPriceBproUsdConversion.spec.js
 
 
 
-## BPRO/COP Price Provider
+##  Price Provider BPRO/COP (V1)
 
 `CoinPairPriceBproUsdConversion` is an adapter contract that returns the price of **BPRO denominated in COP (Colombian Pesos)**.
 
@@ -233,11 +251,9 @@ npx hardhat run scripts/dummy/read-peek.ts --network rskTestnet
 
 
 
+## Price Provider BPRO/USD (V1)
 
-
-## Price Provider Bpro USD V1
-
-return  Bpro USD V1
+return BPRO/USD (V1)
 
 
 ### Deploy
@@ -263,9 +279,9 @@ npx hardhat run scripts/bprousdv1/read-peek.ts --network rskTestnet
 
 
 
-## Price Provider Flip/USD Mock
+## Price Provider FLIP/USD (Mock)
 
-return  FLIP/USD Mock
+return  FLIP/USD (Mock)
 
 
 ### Deploy
@@ -292,7 +308,7 @@ npx hardhat run scripts/flipusd_mock/read-peek.ts --network rskTestnet
 
 
 
-## Price Provider Flip/BPRO
+## Price Provider FLIP/BPRO
 
 return  FLIP/BPRO
 
@@ -320,28 +336,55 @@ npx hardhat run scripts/flipbpro/read-peek.ts --network rskTestnet
 
 
 
-## Price Provider Bpro RBTC V1
+## Price Provider BPRO/BTC (V1)
 
-return  Bpro RBTC V1
+return  BPRO/BTC (V1)
 
 
 ### Deploy
 
 ```bash
-# If you want to change setup see config/bprorbtc/deployConfig-rskTestnet.json
-npx hardhat run scripts/bprorbtc/deploy.js --network rskTestnet
+# If you want to change setup see config/bprobtc/deployConfig-rskTestnet.json
+npx hardhat run scripts/bprobtc/deploy.js --network rskTestnet
 ```
 
 ### Verify
 
 ```bash
-# If you want to change setup see config/bprorbtc/deployConfig-rskTestnet.json
-npx hardhat run scripts/bprorbtc/verify.js --network rskTestnet
+# If you want to change setup see config/bprobtc/deployConfig-rskTestnet.json
+npx hardhat run scripts/bprobtc/verify.js --network rskTestnet
 ```
 
 ### Test deployed contract
 
 ```bash
-# If you want to change setup see config/bprorbtc/deployConfig-rskTestnet.json
-npx hardhat run scripts/bprorbtc/read-peek.ts --network rskTestnet
+# If you want to change setup see config/bprobtc/deployConfig-rskTestnet.json
+npx hardhat run scripts/bprobtc/read-peek.ts --network rskTestnet
+```
+
+
+## Price Provider USD/BTC (V1)
+
+return  USD/BTC (V1)
+
+
+### Deploy
+
+```bash
+# If you want to change setup see config/usdbtc/deployConfig-rskTestnet.json
+npx hardhat run scripts/usdbtc/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+# If you want to change setup see config/usdbtc/deployConfig-rskTestnet.json
+npx hardhat run scripts/usdbtc/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+# If you want to change setup see config/usdbtc/deployConfig-rskTestnet.json
+npx hardhat run scripts/usdbtc/read-peek.ts --network rskTestnet
 ```
