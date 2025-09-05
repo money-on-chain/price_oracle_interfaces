@@ -8,13 +8,13 @@ const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..", "..");
 
 // Helpers (identical to deploy.ts)
-function selectedNetworkName(hre_: any) {
+function selectedNetworkName(hre_: typeof hre) {
   return hre_.globalOptions?.network ?? process.env.HARDHAT_NETWORK ?? "hardhat";
 }
 function defaultConfigPath(root: string, networkName: string) {
   return path.join(root, "config", "usdbtc", `deployConfig-${networkName}.json`);
 }
-function resolveConfigPath(hre_: any, root: string) {
+function resolveConfigPath(hre_: typeof hre, root: string) {
   const fromEnv = process.env.DEPLOY_CONFIG_PATH;
   return fromEnv
     ? path.isAbsolute(fromEnv)
@@ -28,7 +28,8 @@ function loadConfigOrDie(cfgPath: string) {
 }
 
 async function main() {
-  const { ethers } = await hre.network.connect();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { ethers } = (await hre.network.connect()) as any;
   const net = selectedNetworkName(hre);
   const cfgPath = resolveConfigPath(hre, repoRoot);
   const cfg = loadConfigOrDie(cfgPath);
@@ -42,7 +43,10 @@ async function main() {
   console.log("Price provider address:", cfg.priceProviderAddress);
 
   // Attach contract
-  const priceProvider = await ethers.getContractAt("PriceProviderUsdPerBtc", cfg.priceProviderAddress);
+  const priceProvider = await ethers.getContractAt(
+    "PriceProviderUsdPerBtc",
+    cfg.priceProviderAddress,
+  );
 
   const peek = await priceProvider.peek();
 

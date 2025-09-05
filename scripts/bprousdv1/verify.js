@@ -5,7 +5,6 @@ import hre from "hardhat";
 import path from "path";
 import { fileURLToPath } from "url";
 
-
 // ---------------------------------------------------------------------------
 // Paths / helpers
 // ---------------------------------------------------------------------------
@@ -50,11 +49,9 @@ async function main() {
   const address = process.env.VERIFY_ADDRESS || cfg.priceProviderAddress;
   if (!address) throw new Error("Missing address: set VERIFY_ADDRESS or cfg.priceProviderAddress");
 
-  // Build constructor args EXACTLY like deploy.js  
+  // Build constructor args EXACTLY like deploy.js
 
-  const constructorArgs = [    
-    cfg.MoCState,    
-  ];
+  const constructorArgs = [cfg.MoCState];
 
   // Choose verification provider; "blockscout" is appropriate for Rootstock
   const provider = process.env.VERIFY_PROVIDER || "blockscout";
@@ -64,8 +61,8 @@ async function main() {
   console.log("Config          :", cfgPath);
   console.log("Address         :", address);
   console.log("Provider        :", provider);
-  console.log("Constructor args:");  
-  console.log("  MoCState     :", constructorArgs[0]);  
+  console.log("Constructor args:");
+  console.log("  MoCState     :", constructorArgs[0]);
 
   await verifyContract(
     {

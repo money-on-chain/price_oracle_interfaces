@@ -36,7 +36,7 @@
     "format": "prettier . --check",
     "format:fix": "prettier . --write",
     "fix:all": "eslint . --ext .ts,.tsx,.js,.cjs,.mjs --fix && prettier . --write",
-    "check:all": "eslint . --ext .ts,.tsx,.js,.cjs,.mjs && prettier . --check",    
+    "check:all": "eslint . --ext .ts,.tsx,.js,.cjs,.mjs && prettier . --check",
     "test:bprousd_aggregator_v2": "npx hardhat test test/bprousd_aggregator_v2.spec.js"
   },
   "lint-staged": {

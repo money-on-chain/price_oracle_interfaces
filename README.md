@@ -20,10 +20,10 @@ npx hardhat test
 
 ## Deployed interfaces
 
-| Interface | Testnet Address                            | Mainnet Address                            | Description |
-|-----------|--------------------------------------------|--------------------------------------------|-------------|
-| BPRO/USD  | 0xde534F6600e582Aa41A0a30f32c51Ab5fe0F8019 |                                            |             |
-| USD/ARS   | 0xCf330C2FE1e8b4980Fb19A310a32E2B119e4c1B1 |                                            |             |
+| Interface | Testnet Address                            | Mainnet Address | Description |
+| --------- | ------------------------------------------ | --------------- | ----------- |
+| BPRO/USD  | 0xde534F6600e582Aa41A0a30f32c51Ab5fe0F8019 |                 |             |
+| USD/ARS   | 0xCf330C2FE1e8b4980Fb19A310a32E2B119e4c1B1 |                 |             |
 | USD/COP   | 0x81852EEEA69A20D12A47A257EA4756847527E9E5 |                 |             |
 | BPRO/ARS  | 0x3EdB871332380468ea7c76A9d1E98EdF7d8ef70B |                 |             |
 | BPRO/COP  | 0x790A1b5882b6D8d63fd1fC6a18325B227E166035 |                 |             |
@@ -31,10 +31,6 @@ npx hardhat test
 | FLIP/BPRO | 0x56b8C52AE9D2BEfcfE84Dea8BDCb96991400102B |                 |             |
 | BPRO/BTC  | 0xB5f25aCD095e930863799B60a16ed83075BBeB27 |                 |             |
 | USD/BTC   | 0xf57bbB359579e6885aa654a8030688b6db5690dC |                 |             |
-
-
-
-
 
 ## BPRO/USD Aggregator (Chainlink V2-only)
 
@@ -71,8 +67,6 @@ npx hardhat run scripts/bprousd_aggregator_v2/read-latestAnswer.ts --network rsk
 
 - return 8 decimals
 
-
-
 ## Price Provider BPRO/ARS (V1)
 
 `CoinPairPriceBproUsdConversion` is an adapter contract that returns the price of **BPRO denominated in ARS (Argentinian Pesos)**.
@@ -105,7 +99,7 @@ The calculation uses `Math.mulDiv` to handle multiplication and division safely 
 
 ## Example
 
-- ARS/USD oracle: `1366 * 1e18`  
+- ARS/USD oracle: `1366 * 1e18`
 - BPRO/USD from MoCState: `137880 * 1e18`
 
 ```
@@ -149,10 +143,7 @@ npx hardhat run scripts/bproars/read-peek.ts --network rskTestnet
 npx hardhat test test/CoinPairPriceBproUsdConversion.spec.js
 ```
 
-
-
-
-##  Price Provider BPRO/COP (V1)
+## Price Provider BPRO/COP (V1)
 
 `CoinPairPriceBproUsdConversion` is an adapter contract that returns the price of **BPRO denominated in COP (Colombian Pesos)**.
 
@@ -184,16 +175,15 @@ The calculation uses `Math.mulDiv` to handle multiplication and division safely 
 
 ## Example
 
-- COP/USD oracle: `3987 * 1e18`  
+- COP/USD oracle: `3987 * 1e18`
 - BPRO/USD from MoCState: `137880 * 1e18`
 
 ```
 BPRO/COP = (137880e18 * 3987e18) / 1e18
-         = 
+         =
 ```
 
-**Interpretation:** 1 BPRO ≈  COP (≈  million COP).
-
+**Interpretation:** 1 BPRO ≈ COP (≈ million COP).
 
 ### Deploy
 
@@ -222,11 +212,9 @@ npx hardhat run scripts/bprocop/read-peek.ts --network rskTestnet
 npx hardhat test test/CoinPairPriceBproUsdConversion.spec.js
 ```
 
-
 ## Price Provider Dummy
 
 return dummy price
-
 
 ### Deploy
 
@@ -249,12 +237,9 @@ npx hardhat run scripts/dummy/verify.js --network rskTestnet
 npx hardhat run scripts/dummy/read-peek.ts --network rskTestnet
 ```
 
-
-
 ## Price Provider BPRO/USD (V1)
 
 return BPRO/USD (V1)
-
 
 ### Deploy
 
@@ -277,12 +262,9 @@ npx hardhat run scripts/bprousdv1/verify.js --network rskTestnet
 npx hardhat run scripts/bprousdv1/read-peek.ts --network rskTestnet
 ```
 
-
-
 ## Price Provider FLIP/USD (Mock)
 
-return  FLIP/USD (Mock)
-
+return FLIP/USD (Mock)
 
 ### Deploy
 
@@ -305,13 +287,9 @@ npx hardhat run scripts/flipusd_mock/verify.js --network rskTestnet
 npx hardhat run scripts/flipusd_mock/read-peek.ts --network rskTestnet
 ```
 
-
-
-
 ## Price Provider FLIP/BPRO
 
-return  FLIP/BPRO
-
+return FLIP/BPRO
 
 ### Deploy
 
@@ -334,12 +312,9 @@ npx hardhat run scripts/flipbpro/verify.js --network rskTestnet
 npx hardhat run scripts/flipbpro/read-peek.ts --network rskTestnet
 ```
 
-
-
 ## Price Provider BPRO/BTC (V1)
 
-return  BPRO/BTC (V1)
-
+return BPRO/BTC (V1)
 
 ### Deploy
 
@@ -362,11 +337,9 @@ npx hardhat run scripts/bprobtc/verify.js --network rskTestnet
 npx hardhat run scripts/bprobtc/read-peek.ts --network rskTestnet
 ```
 
-
 ## Price Provider USD/BTC (V1)
 
-return  USD/BTC (V1)
-
+return USD/BTC (V1)
 
 ### Deploy
 

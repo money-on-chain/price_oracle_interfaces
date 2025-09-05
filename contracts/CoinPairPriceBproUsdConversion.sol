@@ -7,7 +7,6 @@ import "./interfaces/IMocState.sol";
 import "./interfaces/IPriceProvider.sol";
 import "./interfaces/ICoinPairPrice.sol";
 
-
 /**
  * @title CoinPairPriceBproUsdConversion
  * @notice Adapter contract that returns the price of BPRO denominated in ARS (Argentinian Pesos).
@@ -29,17 +28,11 @@ import "./interfaces/ICoinPairPrice.sol";
  *  - then BPRO/ARS = 188,459,680 (1 BPRO ≈ 188 million ARS).
  */
 
- 
 contract CoinPairPriceBproUsdConversion is CoinPairPrice {
   IMocState public mocState;
   uint256 public constant RATE_PRECISION = 1e18;
 
-  constructor(
-    ICoinPairPrice _coinpairprice,
-    IMocState _mocState
-  )
-    CoinPairPrice(_coinpairprice)
-  {
+  constructor(ICoinPairPrice _coinpairprice, IMocState _mocState) CoinPairPrice(_coinpairprice) {
     require(address(_mocState) != address(0), "mocState address is zero");
     mocState = _mocState;
   }
