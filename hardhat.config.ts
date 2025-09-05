@@ -1,75 +1,91 @@
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-verify";
-import "@nomicfoundation/hardhat-toolbox";
-import * as dotenv from "dotenv";
-dotenv.config();
+// hardhat.config.js (ESM)
+//import 'dotenv/config';
 
-const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
-const accounts = PRIVATE_KEY ? [PRIVATE_KEY] : [];
+import hardhatEthers from "@nomicfoundation/hardhat-ethers";
+import hardhatToolboxMochaEthers from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import hardhatVerify from "@nomicfoundation/hardhat-verify";
+import { configVariable } from "hardhat/config";
 
-const config: HardhatUserConfig = {
+import { config as dotenvConfig } from "dotenv";
+
+dotenvConfig();
+
+export default {
+  plugins: [hardhatEthers, hardhatToolboxMochaEthers, hardhatVerify],
   solidity: {
-    compilers: [      
-      { version: "0.8.24" }
+    compilers: [
+      {
+        version: "0.8.24",
+        settings: { optimizer: { enabled: true, runs: 200 } },
+      },
     ],
-    overrides: {
-      "contracts/BproUsdAggregatorV2Minimal.sol": { version: "0.8.24" },
-      "contracts/BproUsdAggregatorV2Governed.sol": { version: "0.8.24" }
-    }
   },
   networks: {
-    hardhat: {},
-    sepolia: {
-      url: process.env.SEPOLIA_RPC_URL || "",
-      accounts
-    },
-    mainnet: {
-      url: process.env.MAINNET_RPC_URL || "",
-      accounts
-    },
-    // Rootstock Mainnet (chainId 30)
-    rootstock: {
-      chainId: 30,
-      url: process.env.ROOTSTOCK_MAINNET_RPC_URL || "https://public-node.rsk.co",
-      accounts,
-      // Rootstock is not EIP-1559. Set an explicit gasPrice (in wei) if needed.
-      // Typical minimum is ~0.06 gwei = 60,000,000 wei; adjust as your provider suggests.
-      gasPrice: process.env.ROOTSTOCK_GAS_PRICE ? Number(process.env.ROOTSTOCK_GAS_PRICE) : 60000000
-    },
-    // Rootstock Testnet (chainId 31)
-    rootstockTestnet: {
-      chainId: 31,
-      url: process.env.ROOTSTOCK_TESTNET_RPC_URL || "https://public-node.testnet.rsk.co",
-      accounts,
-      gasPrice: process.env.ROOTSTOCK_TESTNET_GAS_PRICE ? Number(process.env.ROOTSTOCK_TESTNET_GAS_PRICE) : 60000000
-    }
-  },
-  etherscan: {
-    // Para Blockscout NO hace falta una key real; usa cualquier string no vacío.
-    apiKey: {
-      rootstockTestnet: "blockscout",
-      rootstock: "blockscout",
-    },
-    customChains: [
-      {
-        network: "rootstockTestnet",
-        chainId: 31,
-        urls: {
-          apiURL: "https://rootstock-testnet.blockscout.com/api",
-          browserURL: "https://rootstock-testnet.blockscout.com",
-        },
+    // Red local/embebida (opcional)
+    hardhat: {
+      type: "edr-simulated",
+      forking: {
+        url: configVariable("FORK_URL"), // <- needit
+        blockNumber: process.env.FORK_BLOCK ? Number(process.env.FORK_BLOCK) : undefined,
+        // headers y timeout optional if you use a public RPC that sometimes delays:
+        // httpHeaders: { /* ... */ },
+        // timeout: 120000,
       },
-      {
-        network: "rootstock",
-        chainId: 30,
-        urls: {
-          apiURL: "https://rootstock.blockscout.com/api",
-          browserURL: "https://rootstock.blockscout.com",
-        },
-      },
-    ],
-  },  
-  sourcify: { enabled: false },
-};
+    },
 
-export default config;
+    // RSK Testnet (HTTP RPC)
+    rskAlphaTestnet: {
+      type: "http",
+      url: process.env.RPC_URL_RSK_TESTNET, // ej: https://public-node.testnet.rsk.co
+      chainId: 31,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      // gasPrice: 60000000n, // optional (wei)
+    },
+
+    // RSK Testnet (HTTP RPC)
+    rskTestnet: {
+      type: "http",
+      url: process.env.RPC_URL_RSK_TESTNET, // ej: https://public-node.testnet.rsk.co
+      chainId: 31,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      // gasPrice: 60000000n, // optional (wei)
+    },
+
+    // RSK Mainnet (HTTP RPC)
+    rskMainnet: {
+      type: "http",
+      url: process.env.RPC_URL_RSK_MAINNET,
+      chainId: 30,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+    },
+  },
+  // ✅ En HH3 use verify
+  verify: {
+    // optional: disable Etherscan if you don't use it
+    etherscan: { enabled: false },
+    // optional: explicitly enable Blockscout (default: enabled)
+    blockscout: { enabled: true },
+  },
+  chainDescriptors: {
+    31: {
+      name: "Rootstock Testnet",
+      blockExplorers: {
+        blockscout: {
+          name: "Rootstock Testnet Blockscout",
+          url: "https://rootstock-testnet.blockscout.com",
+          apiUrl: "https://rootstock-testnet.blockscout.com/api",
+        },
+      },
+    },
+    30: {
+      name: "Rootstock Mainnet",
+      blockExplorers: {
+        blockscout: {
+          name: "Rootstock Blockscout",
+          url: "https://rootstock.blockscout.com",
+          apiUrl: "https://rootstock.blockscout.com/api",
+        },
+      },
+    },
+  },
+};

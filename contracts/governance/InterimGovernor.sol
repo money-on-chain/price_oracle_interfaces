@@ -13,19 +13,21 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
  *  to the real governor must be done
  */
 contract InterimGovernor is IGovernor, Ownable {
-    /**
-     * @notice Function to be called to make the changes in changeContract
-     * @param changeContract_ Address of the contract that will execute the changes
-     */
-    function executeChange(IChangeContract changeContract_) external onlyOwner {
-        changeContract_.execute();
-    }
+  constructor() Ownable(msg.sender) {}
 
-    /**
-     * @notice Only the owner can call protected functions on the Governed contract
-     * @param caller_ Address of the caller of the protected function
-     */
-    function isAuthorizedChanger(address caller_) external view override returns (bool) {
-        return caller_ == owner();
-    }
+  /**
+   * @notice Function to be called to make the changes in changeContract
+   * @param changeContract_ Address of the contract that will execute the changes
+   */
+  function executeChange(IChangeContract changeContract_) external onlyOwner {
+    changeContract_.execute();
+  }
+
+  /**
+   * @notice Only the owner can call protected functions on the Governed contract
+   * @param caller_ Address of the caller of the protected function
+   */
+  function isAuthorizedChanger(address caller_) external view override returns (bool) {
+    return caller_ == owner();
+  }
 }

@@ -1,19 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-// Minimal mock implementing the read your adapter expects
-contract MockMoCState {
-  uint256 private _p;
+import "../interfaces/IMocState.sol";
 
-  constructor(uint256 p) {
-    _p = p;
+contract MockMoCState is IMocState {
+  uint256 private _bproUsdPrice;
+  address private _btcProvider;
+
+  constructor(uint256 initialBproUsdPrice, address initialBtcProvider) {
+    _bproUsdPrice = initialBproUsdPrice;
+    _btcProvider = initialBtcProvider;
+  }
+
+  function setBproUsdPrice(uint256 newPrice) external {
+    _bproUsdPrice = newPrice;
+  }
+
+  function setBtcPriceProvider(address newProvider) external {
+    _btcProvider = newProvider;
   }
 
   function bproUsdPrice() external view returns (uint256) {
-    return _p;
+    return _bproUsdPrice;
   }
 
-  function set(uint256 p) external {
-    _p = p;
+  function bproTecPrice() external pure returns (uint256) {
+    return 0;
+  }
+
+  function getBtcPriceProvider() external view returns (address) {
+    return _btcProvider;
   }
 }

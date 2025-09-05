@@ -10,9 +10,9 @@ pragma solidity 0.8.24;
   system is fully in place.
  */
 interface IChangeContract {
-    /**
+  /**
     @notice Override this function with a recipe of the changes to be done when this ChangeContract
     is executed
    */
-    function execute() external;
+  function execute() external;
 }

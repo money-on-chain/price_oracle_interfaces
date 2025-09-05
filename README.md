@@ -1,105 +1,349 @@
-# BPRO/USD Aggregator (Chainlink V2-only)
+# Price Providers Interfaces
 
-Ready-to-run Hardhat + TypeScript project with two variants:
-- **Minimal** (constructor): exposes `latestAnswer()` and reads directly from `IMoCState.bproUsdPrice()`.
-- **Governed** (initializer): same read path but governed via Areopagus `Governed` (initializer + `onlyAuthorizedChanger` for source updates).
+Calculated oracles interfaces
+
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Quick start](#quick-start)
+- [Deployed interfaces](#deployed-interfaces)
+- [BPRO/USD Aggregator (Chainlink V2-only)](#bprousd-aggregator-chainlink-v2-only)
+- [Price Provider BPRO/ARS (V1)](#price-provider-bproars-v1)
+- [Price Provider BPRO/COP (V1)](#price-provider-bprocop-v1)
+- [Price Provider Dummy](#price-provider-dummy)
+- [Price Provider BPRO/USD (V1)](#price-provider-bprousd-v1)
+- [Price Provider FLIP/USD (Mock)](#price-provider-flipusd-mock)
+- [Price Provider FLIP/BPRO](#price-provider-flipbpro)
+- [Price Provider BPRO/BTC (V1)](#price-provider-bprobtc-v1)
+- [Price Provider USD/BTC (V1)](#price-provider-usdbtc-v1)
 
 ## Requirements
-- Node.js 18+ or 20+
-- An RPC provider (Infura/Alchemy/etc.)
+
+- Node.js 22.10.x +
 
 ## Quick start
+
 ```bash
 nvm use
 npm i
 # choose testnet or mainnet
-cp .env.testnet .env 
+cp .env.testnet .env
 # edit .env with keys and addresses
 npx hardhat compile
 npx hardhat test
 ```
 
-## Deploy (minimal constructor variant)
+## Deployed interfaces
+
+| Interface | Testnet Address                            | Mainnet Address | Description |
+| --------- | ------------------------------------------ | --------------- | ----------- |
+| BPRO/USD  | 0xde534F6600e582Aa41A0a30f32c51Ab5fe0F8019 |                 | BPRO/USD price provider |
+| USD/ARS   | 0xCf330C2FE1e8b4980Fb19A310a32E2B119e4c1B1 |                 | USD/ARS price provider |
+| USD/COP   | 0x81852EEEA69A20D12A47A257EA4756847527E9E5 |                 | USD/COP price provider |
+| BPRO/ARS  | 0x3EdB871332380468ea7c76A9d1E98EdF7d8ef70B |                 | BPRO/ARS adapter |
+| BPRO/COP  | 0x790A1b5882b6D8d63fd1fC6a18325B227E166035 |                 | BPRO/COP adapter |
+| FLIP/USD  | 0x780c13c6E3A124C35F2d8bDDf6B54A505A12A358 |                 | FLIP/USD mock |
+| FLIP/BPRO | 0x56b8C52AE9D2BEfcfE84Dea8BDCb96991400102B |                 | FLIP/BPRO adapter |
+| BPRO/BTC  | 0xB5f25aCD095e930863799B60a16ed83075BBeB27 |                 | BPRO/BTC adapter |
+| USD/BTC   | 0xf57bbB359579e6885aa654a8030688b6db5690dC |                 | USD/BTC adapter |
+
+## BPRO/USD Aggregator (Chainlink V2-only)
+
+This price provider returns BPRO/USD from the Money on Chain contract (`MoCState`).  
+The interface is compatible with Chainlink V2 and returns precision `1e8` (8 decimals).
+
+- Returns 8 decimals precision.
+
+### Test
+
 ```bash
-# Set MOC_STATE in .env or export it inline
-npm run deploy:rootstock:testnet
+npx hardhat test test/bprousd_aggregator_v2/minimal.spec.js
 ```
 
-## Deploy (governed initializer variant)
+### Deploy
+
 ```bash
-# Make sure GOVERNOR is set in .env
-npm run deploy:rootstock:testnet:gov
+npx hardhat run scripts/bprousd_aggregator_v2/deploy.js --network rskTestnet
 ```
 
-## Notes
-- Solidity **0.8.24** is pinned for both contracts.
-- V2 interface has no `decimals()`. Consumers must know the scale of `bproUsdPrice()` (often 18 decimals).
-- The test uses an inline 0.8.24 mock to assert that `latestAnswer()` mirrors `bproUsdPrice()`.
-- For the governed variant, install your governance lib (e.g. `areopagus`) or ensure the import path resolves in your monorepo.
+### Verify
 
-## Rootstock (Mainnet & Testnet)
-
-1. Set in `.env`:
-```
-ROOTSTOCK_MAINNET_RPC_URL=https://public-node.rsk.co
-ROOTSTOCK_TESTNET_RPC_URL=https://public-node.testnet.rsk.co
-# optional explicit gas price in wei
-ROOTSTOCK_GAS_PRICE=60000000
-ROOTSTOCK_TESTNET_GAS_PRICE=60000000
-```
-2. Deploy:
-```
-npm run deploy:rootstock:testnet     # testnet (chainId 31)
-npm run deploy:rootstock             # mainnet (chainId 30)
-```
-3. Verify (Blockscout/Etherscan plugin with customChains):
-```
-npm run verify:rootstock:testnet -- <contract-address> <ctor-args...>
-npm run verify:rootstock -- <contract-address> <ctor-args...>
+```bash
+npx hardhat run scripts/bprousd_aggregator_v2/verify.js --network rskTestnet
 ```
 
-**Testnet**
-```
-npx hardhat verify --network rootstockTestnet 0xFfbEe1089b1ad5f31c92aFf9918e668e1a15C22A 0x0adb40132cB0ffcEf6ED81c26A1881e214100555
-```
+### Test deployed contract
 
-Result:
-
-```
-Successfully submitted source code for contract
-contracts/BproUsdAggregatorV2Minimal.sol:BproUsdAggregatorV2Minimal at 0xFfbEe1089b1ad5f31c92aFf9918e668e1a15C22A
-for verification on the block explorer. Waiting for verification result...
-
-Successfully verified contract BproUsdAggregatorV2Minimal on the block explorer.
-https://rootstock-testnet.blockscout.com/address/0xFfbEe1089b1ad5f31c92aFf9918e668e1a15C22A#code
+```bash
+npx hardhat run scripts/bprousd_aggregator_v2/read-latestAnswer.ts --network rskTestnet
 ```
 
+---
 
+## Price Provider BPRO/ARS (V1)
 
-**Mainnet**
+`CoinPairPriceBproUsdConversion` is an adapter contract that returns the price of **BPRO denominated in ARS (Argentinian Pesos)**.
+
+- Returns values with **18 decimals** precision.  
+- Combines `coinpairprice` (ARS/USD oracle) and `mocState` (BPRO/USD oracle).
+
+### Formula
+
 ```
-npx hardhat verify --network rootstock 0x81786368C1BD435559099ea1c18992529accd3F8 0xb9C42EFc8ec54490a37cA91c423F7285Fa01e257
-```
-
-Result:
-
-```
-Successfully submitted source code for contract
-contracts/BproUsdAggregatorV2Minimal.sol:BproUsdAggregatorV2Minimal at 0x81786368C1BD435559099ea1c18992529accd3F8
-for verification on the block explorer. Waiting for verification result...
-
-Successfully verified contract BproUsdAggregatorV2Minimal on the block explorer.
-https://rootstock.blockscout.com/address/0x81786368C1BD435559099ea1c18992529accd3F8#code
+BPRO/ARS = (BPRO/USD) * (ARS/USD)
 ```
 
+### Example
 
+- ARS/USD oracle: `1366 * 1e18`  
+- BPRO/USD from MoCState: `137880 * 1e18`
 
-**Notes**
-- Rootstock is not EIP-1559. We set an explicit `gasPrice` in the network config to avoid underpriced txs.
-- Explorers: https://explorer.rsk.co (mainnet), https://explorer.testnet.rsk.co (testnet).
+```
+BPRO/ARS = (137880e18 * 1366e18) / 1e18
+         = 188,459,680e18
+```
 
+**Interpretation:** 1 BPRO ≈ 188,459,680 ARS (≈ 188 million ARS).
 
-3. Contracts
+### Test
 
-Testnet - BproUsdAggregatorV2Minimal: 0xEb1ceb9E2d9544e5Fb9ea629816ff181398451E2
-Mainnet:
+```bash
+npx hardhat test test/bproars/minimal.spec.js
+```
+
+### Deploy
+
+```bash
+npx hardhat run scripts/bproars/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+npx hardhat run scripts/bproars/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+npx hardhat run scripts/bproars/read-peek.ts --network rskTestnet
+```
+
+### Unit test
+
+```bash
+npx hardhat test test/CoinPairPriceBproUsdConversion.spec.js
+```
+
+---
+
+## Price Provider BPRO/COP (V1)
+
+`CoinPairPriceBproUsdConversion` is an adapter contract that returns the price of **BPRO denominated in COP (Colombian Pesos)**.
+
+- Returns values with **18 decimals** precision.  
+- Combines `coinpairprice` (COP/USD oracle) and `mocState` (BPRO/USD oracle).
+
+### Formula
+
+```
+BPRO/COP = (BPRO/USD) * (COP/USD)
+```
+
+### Example
+
+- COP/USD oracle: `3987 * 1e18`  
+- BPRO/USD from MoCState: `137880 * 1e18`
+
+```
+BPRO/COP = (137880e18 * 3987e18) / 1e18
+         = 549,720,360e18
+```
+
+**Interpretation:** 1 BPRO ≈ 549,720,360 COP (≈ 550 million COP).
+
+### Deploy
+
+```bash
+npx hardhat run scripts/bprocop/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+npx hardhat run scripts/bprocop/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+npx hardhat run scripts/bprocop/read-peek.ts --network rskTestnet
+```
+
+### Unit test
+
+```bash
+npx hardhat test test/CoinPairPriceBproUsdConversion.spec.js
+```
+
+---
+
+## Price Provider Dummy
+
+`PriceProviderDummy` is a minimal provider that always returns a fixed price set at deployment.
+
+- Returns values with **18 decimals** precision.
+
+### Deploy
+
+```bash
+npx hardhat run scripts/dummy/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+npx hardhat run scripts/dummy/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+npx hardhat run scripts/dummy/read-peek.ts --network rskTestnet
+```
+
+---
+
+## Price Provider BPRO/USD (V1)
+
+`PriceProviderBproUsdV1` returns the **BPRO/USD** price from MoCState.  
+Uses the BTC provider of MoC as validity gate.
+
+- Returns values with **18 decimals** precision.
+
+### Deploy
+
+```bash
+npx hardhat run scripts/bprousdv1/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+npx hardhat run scripts/bprousdv1/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+npx hardhat run scripts/bprousdv1/read-peek.ts --network rskTestnet
+```
+
+---
+
+## Price Provider FLIP/USD (Mock)
+
+Mock provider that always returns FLIP/USD at a fixed value (commonly 1e18).
+
+- Returns values with **18 decimals** precision.
+
+### Deploy
+
+```bash
+npx hardhat run scripts/flipusd_mock/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+npx hardhat run scripts/flipusd_mock/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+npx hardhat run scripts/flipusd_mock/read-peek.ts --network rskTestnet
+```
+
+---
+
+## Price Provider FLIP/BPRO
+
+`PriceProviderFlipPerBpro` returns the ratio **FLIP/BPRO**, calculated as:
+
+```
+FLIP/BPRO = (FLIP/USD) / (BPRO/USD)
+```
+
+- Returns values with **18 decimals** precision.
+
+### Deploy
+
+```bash
+npx hardhat run scripts/flipbpro/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+npx hardhat run scripts/flipbpro/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+npx hardhat run scripts/flipbpro/read-peek.ts --network rskTestnet
+```
+
+---
+
+## Price Provider BPRO/BTC (V1)
+
+`PriceProviderBproBtc` returns the **BPRO/BTC** price.  
+Uses MoCState’s BTC provider as gate for validity.
+
+- Returns values with **18 decimals** precision.
+
+### Deploy
+
+```bash
+npx hardhat run scripts/bprobtc/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+npx hardhat run scripts/bprobtc/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+npx hardhat run scripts/bprobtc/read-peek.ts --network rskTestnet
+```
+
+---
+
+## Price Provider USD/BTC (V1)
+
+`PriceProviderUsdBtc` returns the **USD/BTC** price, i.e. the inverse of RBTC/USD from MoC’s BTC provider.
+
+- Returns values with **18 decimals** precision.
+
+### Deploy
+
+```bash
+npx hardhat run scripts/usdbtc/deploy.js --network rskTestnet
+```
+
+### Verify
+
+```bash
+npx hardhat run scripts/usdbtc/verify.js --network rskTestnet
+```
+
+### Test deployed contract
+
+```bash
+npx hardhat run scripts/usdbtc/read-peek.ts --network rskTestnet
+```

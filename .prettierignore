@@ -1,0 +1,19 @@
+# node / tooling
+node_modules/
+.husky/
+.vscode/
+
+# builds / caches
+dist/
+build/
+coverage/
+artifacts/
+cache/
+out/
+
+# types generados (typechain/ethers)
+typechain*/
+types/ethers-contracts/
+
+# otros generados
+**/*.d.ts

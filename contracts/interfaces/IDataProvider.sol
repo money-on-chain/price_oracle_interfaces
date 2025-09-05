@@ -9,10 +9,10 @@ pragma solidity 0.8.24;
  * @dev https://github.com/money-on-chain/OMoC-Decentralized-Oracle
  */
 interface IDataProvider {
-    /**
-     * @notice returns the given `data` if `valid`
-     * @param data peeked
-     * @param valid true if the data is valid
-     */
-    function peek() external view returns (bytes32 data, bool valid);
+  /**
+   * @notice returns the given `data` if `valid`
+   * @param data peeked
+   * @param valid true if the data is valid
+   */
+  function peek() external view returns (bytes32 data, bool valid);
 }
