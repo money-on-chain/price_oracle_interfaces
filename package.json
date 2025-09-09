@@ -1,4 +1,24 @@
 {
+  "name": "price-oracle-interfaces",
+  "version": "0.0.1",
+  "description": "Price Oracle Interfaces",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/money-on-chain/price_oracle_interfaces.git"
+  },
+  "keywords": [
+    "solidity",
+    "oracle",
+    "money-on-chain",
+    "smart-contracts"
+  ],
+  "files": [
+    "contracts",
+    "config",
+    "scripts",
+    "test"    
+  ],  
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^3.0.0",
