@@ -106,12 +106,17 @@ export default [
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
       "no-empty": "off",
+      // Para poder usar matchers como to.be.true
+      "@typescript-eslint/no-unused-expressions": "off",
+      // Los tests dan información al ejecutarse, no por compilar.
+      // No está mal usar any si un type es muy largo u obscuro.
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 
   // 8) Scripts/CLI/Configs de Hardhat: permitir console, etc.
   {
-    files: ["hardhat.config.{js,ts}", "scripts/**/*.{js,ts,mjs,cjs}", "tasks/**/*.{js,ts,mjs,cjs}"],
+    files: ["hardhat.config.{js,ts}", "scripts/**/*.{js,ts,mjs,cjs}"],
     rules: {
       "no-console": "off",
       "@typescript-eslint/no-unused-vars": "off",

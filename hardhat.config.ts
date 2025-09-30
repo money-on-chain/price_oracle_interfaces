@@ -1,21 +1,41 @@
 // hardhat.config.js (ESM)
 //import 'dotenv/config';
-
-import hardhatEthers from "@nomicfoundation/hardhat-ethers";
-import hardhatToolboxMochaEthers from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
-import hardhatVerify from "@nomicfoundation/hardhat-verify";
+import ethersPlugin from "@nomicfoundation/hardhat-ethers";
+import mochaPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+import verifyPlugin from "@nomicfoundation/hardhat-verify";
 import { configVariable } from "hardhat/config";
 
+import ignitionPlugin from "@nomicfoundation/hardhat-ignition-ethers";
+import helpersPlugin from "@nomicfoundation/hardhat-network-helpers";
+import typechainPlugin from "@nomicfoundation/hardhat-typechain";
 import { config as dotenvConfig } from "dotenv";
 
 dotenvConfig();
 
 export default {
-  plugins: [hardhatEthers, hardhatToolboxMochaEthers, hardhatVerify],
+  plugins: [
+    ethersPlugin,
+    typechainPlugin,
+    mochaPlugin,
+    verifyPlugin,
+    ignitionPlugin,
+    helpersPlugin,
+  ],
+  test: {
+    files: ["./test/**/*.spec.ts", "./test/**/*.test.ts"],
+  },
+  typechain: {
+    outDir: "typechain-types",
+    target: "ethers-v6",
+  },
   solidity: {
     compilers: [
       {
         version: "0.8.24",
+        settings: { optimizer: { enabled: true, runs: 200 } },
+      },
+      {
+        version: "0.7.6",
         settings: { optimizer: { enabled: true, runs: 200 } },
       },
     ],

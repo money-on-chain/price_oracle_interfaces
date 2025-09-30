@@ -35,17 +35,17 @@ npx hardhat test
 
 ## Deployed interfaces
 
-| Interface | Testnet Address                            | Mainnet Address | Description |
-| --------- | ------------------------------------------ | --------------- | ----------- |
+| Interface | Testnet Address                            | Mainnet Address | Description             |
+| --------- | ------------------------------------------ | --------------- | ----------------------- |
 | BPRO/USD  | 0xde534F6600e582Aa41A0a30f32c51Ab5fe0F8019 |                 | BPRO/USD price provider |
-| USD/ARS   | 0xCf330C2FE1e8b4980Fb19A310a32E2B119e4c1B1 |                 | USD/ARS price provider |
-| USD/COP   | 0x81852EEEA69A20D12A47A257EA4756847527E9E5 |                 | USD/COP price provider |
-| BPRO/ARS  | 0x3EdB871332380468ea7c76A9d1E98EdF7d8ef70B |                 | BPRO/ARS adapter |
-| BPRO/COP  | 0x790A1b5882b6D8d63fd1fC6a18325B227E166035 |                 | BPRO/COP adapter |
-| FLIP/USD  | 0x780c13c6E3A124C35F2d8bDDf6B54A505A12A358 |                 | FLIP/USD mock |
-| FLIP/BPRO | 0x56b8C52AE9D2BEfcfE84Dea8BDCb96991400102B |                 | FLIP/BPRO adapter |
-| BPRO/BTC  | 0xB5f25aCD095e930863799B60a16ed83075BBeB27 |                 | BPRO/BTC adapter |
-| USD/BTC   | 0xf57bbB359579e6885aa654a8030688b6db5690dC |                 | USD/BTC adapter |
+| USD/ARS   | 0xCf330C2FE1e8b4980Fb19A310a32E2B119e4c1B1 |                 | USD/ARS price provider  |
+| USD/COP   | 0x81852EEEA69A20D12A47A257EA4756847527E9E5 |                 | USD/COP price provider  |
+| BPRO/ARS  | 0x3EdB871332380468ea7c76A9d1E98EdF7d8ef70B |                 | BPRO/ARS adapter        |
+| BPRO/COP  | 0x790A1b5882b6D8d63fd1fC6a18325B227E166035 |                 | BPRO/COP adapter        |
+| FLIP/USD  | 0x780c13c6E3A124C35F2d8bDDf6B54A505A12A358 |                 | FLIP/USD mock           |
+| FLIP/BPRO | 0x56b8C52AE9D2BEfcfE84Dea8BDCb96991400102B |                 | FLIP/BPRO adapter       |
+| BPRO/BTC  | 0xB5f25aCD095e930863799B60a16ed83075BBeB27 |                 | BPRO/BTC adapter        |
+| USD/BTC   | 0xf57bbB359579e6885aa654a8030688b6db5690dC |                 | USD/BTC adapter         |
 
 ## BPRO/USD Aggregator (Chainlink V2-only)
 
@@ -84,7 +84,7 @@ npx hardhat run scripts/bprousd_aggregator_v2/read-latestAnswer.ts --network rsk
 
 `CoinPairPriceBproUsdConversion` is an adapter contract that returns the price of **BPRO denominated in ARS (Argentinian Pesos)**.
 
-- Returns values with **18 decimals** precision.  
+- Returns values with **18 decimals** precision.
 - Combines `coinpairprice` (ARS/USD oracle) and `mocState` (BPRO/USD oracle).
 
 ### Formula
@@ -95,7 +95,7 @@ BPRO/ARS = (BPRO/USD) * (ARS/USD)
 
 ### Example
 
-- ARS/USD oracle: `1366 * 1e18`  
+- ARS/USD oracle: `1366 * 1e18`
 - BPRO/USD from MoCState: `137880 * 1e18`
 
 ```
@@ -141,7 +141,7 @@ npx hardhat test test/CoinPairPriceBproUsdConversion.spec.js
 
 `CoinPairPriceBproUsdConversion` is an adapter contract that returns the price of **BPRO denominated in COP (Colombian Pesos)**.
 
-- Returns values with **18 decimals** precision.  
+- Returns values with **18 decimals** precision.
 - Combines `coinpairprice` (COP/USD oracle) and `mocState` (BPRO/USD oracle).
 
 ### Formula
@@ -152,7 +152,7 @@ BPRO/COP = (BPRO/USD) * (COP/USD)
 
 ### Example
 
-- COP/USD oracle: `3987 * 1e18`  
+- COP/USD oracle: `3987 * 1e18`
 - BPRO/USD from MoCState: `137880 * 1e18`
 
 ```

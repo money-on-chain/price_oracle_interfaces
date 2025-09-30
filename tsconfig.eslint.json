@@ -1,12 +1,5 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": { "noEmit": true },
-  "include": [
-    "scripts/**/*",
-    "deploy/**/*",
-    "tasks/**/*",
-    "test/**/*",
-    "src/**/*",
-    "hardhat.config.ts"
-  ]
+  "include": ["scripts/**/*", "deploy/**/*", "test/**/*", "src/**/*", "hardhat.config.ts"]
 }
