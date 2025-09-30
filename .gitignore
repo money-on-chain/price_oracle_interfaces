@@ -12,3 +12,5 @@ types/
 out/
 typechain*/
 types/ethers-contracts/
+.log
+soljson-latest.js

@@ -21,13 +21,22 @@
   ],  
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.0",
+    "@nomicfoundation/hardhat-ignition": "^3.0.3",
+    "@nomicfoundation/hardhat-ignition-ethers": "^3.0.3",
     "@nomicfoundation/hardhat-network-helpers": "^3.0.0",
     "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-typechain": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^3.0.0",
+    "@nomicfoundation/ignition-core": "^3.0.3",
     "@openzeppelin/contracts": "^5.4.0",
     "@openzeppelin/contracts-upgradeable": "^5.4.0",
+    "@types/chai": "^5.2.2",
+    "@types/mocha": "^10.0.10",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",
+    "@uniswap/swap-router-contracts": "1.3.1",
+    "@uniswap/v3-core": "1.0.1",
+    "@uniswap/v3-periphery": "1.4.4",
     "chai": "^5.3.1",
     "dotenv": "^17.2.1",
     "eslint": "^9.34.0",
@@ -45,14 +54,16 @@
     "prettier": "2.8.8",
     "prettier-plugin-solidity": "^1.4.3",
     "solhint": "^6.0.1",
+    "typechain": "^8.3.2",
+    "typescript": "^5.9.2",
     "typescript-eslint": "^8.41.0"
   },
   "scripts": {
     "compile": "hardhat compile",
     "clean": "hardhat clean",
     "test": "hardhat test",
-    "lint": "eslint 'scripts/**/*.{ts,js,cjs,mjs}' 'tasks/**/*.{ts,js,cjs,mjs}' 'test/**/*.{ts,js,cjs,mjs}' 'hardhat.config.{ts,js}' && solhint 'contracts/**/*.sol'",
-    "lint:fix": "eslint 'scripts/**/*.{ts,js,cjs,mjs}' 'tasks/**/*.{ts,js,cjs,mjs}' 'test/**/*.{ts,js,cjs,mjs}' 'hardhat.config.{ts,js}' --fix",
+    "lint": "eslint 'scripts/**/*.{ts,js,cjs,mjs}' 'test/**/*.{ts,js,cjs,mjs}' 'hardhat.config.{ts,js}' && solhint 'contracts/**/*.sol'",
+    "lint:fix": "eslint 'scripts/**/*.{ts,js,cjs,mjs}' 'test/**/*.{ts,js,cjs,mjs}' 'hardhat.config.{ts,js}' --fix",
     "format": "prettier . --check",
     "format:fix": "prettier . --write",
     "fix:all": "eslint . --ext .ts,.tsx,.js,.cjs,.mjs --fix && prettier . --write",
@@ -73,5 +84,6 @@
     ]
   },
   "overrides": {},
-  "type": "module"
+  "type": "module",
+  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
 }

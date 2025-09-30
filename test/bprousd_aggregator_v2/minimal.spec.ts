@@ -16,8 +16,13 @@ describe("BproUsdAggregatorV2Minimal", () => {
     // 1) Deploy mock with a 18-decimal price
     //    Example: 1.234567890123456789 * 1e18
     const initial = to18("1.234567890123456789");
+
+    // BTC provider: valid and non-zero (we only care about the validity gate)
+    const MockProv = await ethers.getContractFactory("MockPriceProvider");
+    const prov = await MockProv.deploy(to18("50000"), true);
+
     const Mock = await ethers.getContractFactory("MockMoCState");
-    const mock = await Mock.deploy(initial);
+    const mock = await Mock.deploy(initial, prov);
 
     // 2) Deploy aggregator pointing to mock
     const Agg = await ethers.getContractFactory("BproUsdAggregatorV2Minimal");
@@ -33,7 +38,7 @@ describe("BproUsdAggregatorV2Minimal", () => {
     // 4) Change the mock price and re-check
     //    e.g. 1234.567890123456789 * 1e18
     const newPrice = to18("1234.567890123456789");
-    await mock.setPrice(newPrice);
+    await mock.setBproUsdPrice(newPrice);
 
     const expected2 = newPrice / 10n ** 10n;
     const ans2 = await agg.latestAnswer();
