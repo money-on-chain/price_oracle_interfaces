@@ -57,6 +57,7 @@ async function main() {
   const asBigInt = BigInt(peek[0].toString());
   const formatted = Number(asBigInt) / 1e18;
   console.log("Price (formatted):", formatted.toFixed(8), "BPRO");
+  console.log("Valid:", peek[1]);
 }
 
 main().catch((e) => {

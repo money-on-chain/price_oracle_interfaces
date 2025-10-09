@@ -29,27 +29,31 @@ contract PriceProviderFlipPerBpro is IPriceProvider {
 
   /// @notice Returns FLIP/BPRO with 18 decimals, gated by MoC BTC provider validity.
   function peek() external view override returns (bytes32, bool) {
-    // 1) Gate by MoC BTC provider validity (same pattern you use now)
-    address btcProvider = mocState.getBtcPriceProvider();
-    if (btcProvider == address(0)) return (bytes32(0), false);
+    // 1) Read the BTC (or base pair) provider from MoCState
+    address baseProvider = mocState.getBtcPriceProvider();
+    if (baseProvider == address(0)) return (bytes32(0), false);
 
-    (bytes32 btcPrice, bool btcOk) = ICoinPairPrice(btcProvider).peek();
-    if (!(btcOk && btcPrice != bytes32(0))) return (bytes32(0), false);
+    // 2) Get the base pair rate validity (generic variable name)
+    (, bool pairRateIsValid) = ICoinPairPrice(baseProvider).peek();
 
-    // 2) Read FLIP/USD (18d) from external provider
-    (bytes32 fRaw, bool fOk) = flipUsd.peek();
-    if (!fOk || fRaw == bytes32(0)) return (bytes32(0), false);
-    uint256 f = uint256(fRaw);
+    // 3) Get FLIP/USD from external provider (18 decimals)
+    (bytes32 flipRateBytes, bool flipRateIsValid) = flipUsd.peek();
+    uint256 flipRate = uint256(flipRateBytes);
 
-    // 3) Read BPRO/USD (18d) from MoC
-    uint256 b = mocState.bproUsdPrice();
-    if (b == 0) return (bytes32(0), false);
+    // 4) Get BPRO/USD from MoCState (18 decimals)
+    uint256 bproUsdPrice = mocState.bproUsdPrice();
 
-    // 4) Compute: FLIP/BPRO = (FLIP/USD) / (BPRO/USD) = (f * 1e18) / b
-    uint256 flipPerBpro = Math.mulDiv(f, 1e18, b);
-    if (flipPerBpro == 0) return (bytes32(0), false);
+    // 5) Compute FLIP/BPRO = (FLIP/USD) / (BPRO/USD) = (flipRate * 1e18) / bproUsdPrice
+    uint256 flipPerBpro = 0;
+    if (flipRate != 0 && bproUsdPrice != 0) {
+      flipPerBpro = Math.mulDiv(flipRate, 1e18, bproUsdPrice);
+    }
 
-    return (bytes32(flipPerBpro), true);
+    // 6) Determine overall validity (all sources valid + non-zero result)
+    bool overallValid = pairRateIsValid && flipRateIsValid && flipPerBpro != 0;
+
+    // 7) Always return the calculated value, even if validity is false
+    return (bytes32(flipPerBpro), overallValid);
   }
 
   /// @notice Freshness: min(lastPubBlock of FLIP/USD, lastPubBlock of MoC's BTC provider).

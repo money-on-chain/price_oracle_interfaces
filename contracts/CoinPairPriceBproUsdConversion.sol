@@ -39,20 +39,24 @@ contract CoinPairPriceBproUsdConversion is CoinPairPrice {
 
   /// NOTE: Assumes coinpairpricePrice has 18 decimals. If not, scale here.
   function peek() external view override returns (bytes32, bool) {
-    (bytes32 coinpairpricePrice, bool coinpairpriceIsValid) = coinpairprice.peek();
+    // 1) Read both data sources (even if they report invalid)
+    (bytes32 pairRateBytes, bool pairRateIsValid) = coinpairprice.peek();
+    (, bool btcIsValid) = IPriceProvider(mocState.getBtcPriceProvider()).peek();
 
-    if (coinpairpriceIsValid && coinpairpricePrice != bytes32(0)) {
-      (bytes32 btcPrice, bool isValid) = IPriceProvider(mocState.getBtcPriceProvider()).peek();
-      if (isValid && btcPrice != bytes32(0)) {
-        uint256 bproUsdPrice = mocState.bproUsdPrice(); // 18d
-        uint256 calculatedPrice = Math.mulDiv(
-          bproUsdPrice,
-          uint256(coinpairpricePrice),
-          RATE_PRECISION
-        );
-        return (bytes32(calculatedPrice), calculatedPrice != 0);
-      }
+    // 2) Convert the external pair rate and get BPRO/USD price from MoCState
+    uint256 pairRate = uint256(pairRateBytes); // assumed to have 18 decimals
+    uint256 bproUsdPrice = mocState.bproUsdPrice(); // 18 decimals
+
+    // 3) Try to calculate the conversion regardless of validity flags
+    uint256 calculatedPrice = 0;
+    if (pairRate != 0 && bproUsdPrice != 0) {
+      calculatedPrice = Math.mulDiv(bproUsdPrice, pairRate, RATE_PRECISION);
     }
-    return (0, false);
+
+    // 4) Valid if both sources are valid and the result is non-zero
+    bool overallValid = pairRateIsValid && btcIsValid && calculatedPrice != 0;
+
+    // 5) Always return the calculated price (even if invalid)
+    return (bytes32(calculatedPrice), overallValid);
   }
 }

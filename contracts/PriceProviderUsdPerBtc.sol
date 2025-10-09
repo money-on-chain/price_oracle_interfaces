@@ -22,19 +22,25 @@ contract PriceProviderUsdPerBtc is IPriceProvider {
 
   /// @notice Returns USD/BTC with 18 decimals.
   function peek() external view override returns (bytes32, bool) {
+    // 1) Resolve BTC/USD provider from MoCState
     address provider = mocState.getBtcPriceProvider();
     if (provider == address(0)) return (bytes32(0), false);
 
-    (bytes32 btcUsdRaw, bool ok) = ICoinPairPrice(provider).peek();
-    if (!ok || btcUsdRaw == bytes32(0)) return (bytes32(0), false);
+    // 2) Read the pair rate (generic name) from the provider: BTC/USD (18 decimals)
+    (bytes32 pairRateBytes, bool pairRateIsValid) = ICoinPairPrice(provider).peek();
+    uint256 pairRate = uint256(pairRateBytes); // BTC/USD
 
-    uint256 btcUsd = uint256(btcUsdRaw); // BTC/USD in 18 decimals
-    if (btcUsd == 0) return (bytes32(0), false);
+    // 3) Compute USD/BTC = 1e18 / (BTC/USD) = (1e18 * 1e18) / pairRate
+    uint256 usdPerBtc = 0;
+    if (pairRate != 0) {
+      usdPerBtc = Math.mulDiv(1e18, 1e18, pairRate);
+    }
 
-    // USD/BTC = 1e18 / (BTC/USD)
-    uint256 usdPerBtc = Math.mulDiv(1e18, 1e18, btcUsd);
+    // 4) Validity reflects data trustworthiness (provider validity + non-zero result)
+    bool overallValid = pairRateIsValid && pairRate != 0 && usdPerBtc != 0;
 
-    return (bytes32(usdPerBtc), usdPerBtc != 0);
+    // 5) Always return the computed value (if computable), even if validity is false
+    return (bytes32(usdPerBtc), overallValid);
   }
 
   /// @notice Forwards last publication block from MoC's BTC provider.
