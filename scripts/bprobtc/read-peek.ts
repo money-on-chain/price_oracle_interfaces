@@ -52,6 +52,7 @@ async function main() {
 
   // Raw bytes32
   console.log("Price (raw bytes32, 18 decimals):", peek[0].toString());
+  console.log("Valid:", peek[1]);
 
   // human-friendly (divide by 1e18)
   const asBigInt = BigInt(peek[0].toString());

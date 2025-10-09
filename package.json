@@ -17,8 +17,8 @@
     "contracts",
     "config",
     "scripts",
-    "test"    
-  ],  
+    "test"
+  ],
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^4.0.0",
     "@nomicfoundation/hardhat-ignition": "^3.0.3",

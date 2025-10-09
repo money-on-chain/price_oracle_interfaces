@@ -67,7 +67,7 @@ describe("CoinPairPriceBproUsdConversion", () => {
 
     const [price, valid] = await adapter.peek();
     expect(valid).to.equal(false);
-    expect(ethers.toBigInt(price)).to.equal(0n);
+    expect(ethers.toBigInt(price)).to.equal(6000000000000000000n);
   });
 
   it("returns (0,false) if BTC price provider is invalid", async () => {
@@ -85,7 +85,7 @@ describe("CoinPairPriceBproUsdConversion", () => {
 
     const [price, valid] = await adapter.peek();
     expect(valid).to.equal(false);
-    expect(ethers.toBigInt(price)).to.equal(0n);
+    expect(ethers.toBigInt(price)).to.equal(6000000000000000000n);
   });
 
   it("forwards getLastPublicationBlock from the base oracle", async () => {

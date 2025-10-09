@@ -21,19 +21,28 @@ contract PriceProviderBproUsdV1 is IPriceProvider {
 
   /// @notice Returns (price, valid) where price is BPRO/USD in 18 decimals.
   function peek() external view returns (bytes32, bool) {
-    // Read BTC price provider once
+    // 1) Read the BTC (or base pair) price provider from MoCState
     address provider = mocState.getBtcPriceProvider();
     if (provider == address(0)) return (bytes32(0), false);
 
-    // Gate by provider validity (serves as freshness/age check)
-    (bytes32 btcPrice, bool isValid) = ICoinPairPrice(provider).peek();
-    if (!(isValid && btcPrice != bytes32(0))) return (bytes32(0), false);
+    // 2) Query the pair rate (generic name instead of btcPrice)
+    (bytes32 pairRateBytes, bool pairRateIsValid) = ICoinPairPrice(provider).peek();
 
-    // Pull BPRO/USD (18 decimals)
-    uint256 bproUsdPrice = mocState.bproUsdPrice();
-    if (bproUsdPrice == 0) return (bytes32(0), false);
+    // 3) Convert and retrieve the BPRO/USD price from MoCState
+    uint256 pairRate = uint256(pairRateBytes);
+    uint256 bproUsdPrice = mocState.bproUsdPrice(); // always 18 decimals
 
-    return (bytes32(bproUsdPrice), true);
+    // 4) Always attempt to return the result even if validity is false
+    //    Only return zero if there is no data available
+    if (bproUsdPrice == 0) {
+      return (bytes32(0), false);
+    }
+
+    // 5) Determine overall validity based on provider trust and non-zero data
+    bool overallValid = pairRateIsValid && pairRate != 0 && bproUsdPrice != 0;
+
+    // 6) Return the calculated price (as bytes32) and overall validity flag
+    return (bytes32(bproUsdPrice), overallValid);
   }
 
   /// @notice Forwards the last publication block from MoC's BTC provider (used by age checks).
