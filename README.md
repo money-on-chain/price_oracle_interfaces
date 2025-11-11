@@ -38,6 +38,7 @@ npx hardhat test
 | Interface | Testnet Address                            | Mainnet Address | Description             |
 | --------- | ------------------------------------------ | --------------- | ----------------------- |
 | BPRO/USD  | 0xb45cEF263FFB8bbfA91c176C722692573c743ACe |                 | BPRO/USD price provider |
+| DOC/USD   | 0xaeB119cF080FDD668E6Ba845f663912C473778F8 |                 | DOC/USD price provider  |
 | USD/ARS   | 0xCf330C2FE1e8b4980Fb19A310a32E2B119e4c1B1 |                 | USD/ARS price provider  |
 | USD/COP   | 0x81852EEEA69A20D12A47A257EA4756847527E9E5 |                 | USD/COP price provider  |
 | BPRO/ARS  | 0x6979513C5De144B31dD36d87892fD6CEF95Cf59A |                 | BPRO/ARS adapter        |
