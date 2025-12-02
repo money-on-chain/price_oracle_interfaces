@@ -6,6 +6,7 @@ import "./CoinPairPrice.sol";
 import "./interfaces/IMocState.sol";
 import "./interfaces/IPriceProvider.sol";
 import "./interfaces/ICoinPairPrice.sol";
+import "./BproPriceLib.sol";
 
 /**
  * @title CoinPairPriceBproUsdConversion
@@ -29,6 +30,8 @@ import "./interfaces/ICoinPairPrice.sol";
  */
 
 contract CoinPairPriceBproUsdConversion is CoinPairPrice {
+  using BproPriceLib for IMocState;
+
   IMocState public mocState;
   uint256 public constant RATE_PRECISION = 1e18;
 
@@ -46,13 +49,7 @@ contract CoinPairPriceBproUsdConversion is CoinPairPrice {
     // 2) Convert the external pair rate and get BPRO/USD price from MoCState
     uint256 pairRate = uint256(pairRateBytes); // assumed to have 18 decimals
 
-    // These lines reimplement the mocState bproUsdPrice method,
-    // We can't use bproUsdPrice directly because it uses getBitcoinPrice internally.
-    // getBitcoinPrice reverts when the price is invalid.
-    // but this peek method should not revert, and instead use the old price but mark it as invalid.
-    // Invalid prices are still useful for ballpark suggestions such as initializing the EMA on a deployment.
-    uint256 bproBtcPrice = mocState.bproTecPrice();
-    uint256 bproUsdPrice = uint256(btcPrice) * bproBtcPrice / 1e18; // 18 decimals
+    uint256 bproUsdPrice = mocState.bproUsdPriceSafe(btcPrice);
 
     // 3) Try to calculate the conversion regardless of validity flags
     uint256 calculatedPrice = 0;

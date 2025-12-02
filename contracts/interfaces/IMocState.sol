@@ -5,6 +5,10 @@ pragma solidity 0.8.24;
  * @notice Interface for MocState price providers relevant methods
  */
 interface IMocState {
+
+  // Relation between DOC and dollar
+  function peg() external view returns (uint256);
+  
   /**
    * @dev BPro USD PRICE
    * @return the BPro USD Price [using mocPrecision]
@@ -22,4 +26,26 @@ interface IMocState {
    * @return btcPriceProvider blocks there are in a day
    **/
   function getBtcPriceProvider() external view returns (address);
+
+  /**
+    @dev All docs in circulation
+  */
+  function docTotalSupply() external view returns(uint256);
+
+  /**
+   @dev return the value of the protected threshold configuration param
+   @return protected threshold, currently 1.5
+  */
+  function getProtected() external view returns(uint256);
+
+  /**
+    @dev Amount of Bitcoins in the system excluding BTCx values and interests holdings
+  */
+  function collateralRbtcInSystem() external view returns(uint256); 
+
+  function getBucketNBTC(bytes32 bucket) external view returns(uint256);
+
+  function getBucketNBPro(bytes32 bucket) external view returns(uint256);
+
+  function getBucketNDoc(bytes32 bucket) external view returns(uint256);
 }

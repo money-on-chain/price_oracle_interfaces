@@ -25,10 +25,38 @@ contract MockMoCState is IMocState {
   }
 
   function bproTecPrice() external pure returns (uint256) {
-    return 1e18; // To keep calculations simple.
+    return 1e18; // To keep calculations, 1BTC is 1BPRO
+  }
+
+  function getProtected() external view returns(uint256) {
+    return 2e18;
   }
 
   function getBtcPriceProvider() external view returns (address) {
     return _btcProvider;
+  }
+
+  function docTotalSupply() external view returns(uint256) {
+    return _bproUsdPrice; // Exactly 1 BTC worth of DOC at current price.
+  }
+
+  function collateralRbtcInSystem() external view returns(uint256) {
+    return 5e18; // 5BTC is enough collateral for 1BTC worth of DOC.
+  } 
+
+  function getBucketNBTC(bytes32 /*bucket*/) external view returns(uint256) {
+    return 5e18; // 5BTC, same as collateral.
+  }
+
+  function getBucketNBPro(bytes32 /*bucket*/) external view returns(uint256) {
+    return 4e18; // 4BPRO, which equals 4BTC at current 1:1 rate.
+  }
+
+  function getBucketNDoc(bytes32 /*bucket*/) external view returns(uint256) {
+    return _bproUsdPrice; // Exactly 1 BTC worth of DOC at current price.
+  }
+
+  function peg() external view returns (uint256) {
+    return 1; // Peg is 1 on MOC. (not 1e18, just 1).
   }
 }
