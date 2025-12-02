@@ -41,11 +41,18 @@ contract CoinPairPriceBproUsdConversion is CoinPairPrice {
   function peek() external view override returns (bytes32, bool) {
     // 1) Read both data sources (even if they report invalid)
     (bytes32 pairRateBytes, bool pairRateIsValid) = coinpairprice.peek();
-    (, bool btcIsValid) = IPriceProvider(mocState.getBtcPriceProvider()).peek();
+    (bytes32 btcPrice, bool btcIsValid) = IPriceProvider(mocState.getBtcPriceProvider()).peek();
 
     // 2) Convert the external pair rate and get BPRO/USD price from MoCState
     uint256 pairRate = uint256(pairRateBytes); // assumed to have 18 decimals
-    uint256 bproUsdPrice = mocState.bproUsdPrice(); // 18 decimals
+
+    // These lines reimplement the mocState bproUsdPrice method,
+    // We can't use bproUsdPrice directly because it uses getBitcoinPrice internally.
+    // getBitcoinPrice reverts when the price is invalid.
+    // but this peek method should not revert, and instead use the old price but mark it as invalid.
+    // Invalid prices are still useful for ballpark suggestions such as initializing the EMA on a deployment.
+    uint256 bproBtcPrice = mocState.bproTecPrice();
+    uint256 bproUsdPrice = uint256(btcPrice) * bproBtcPrice / 1e18; // 18 decimals
 
     // 3) Try to calculate the conversion regardless of validity flags
     uint256 calculatedPrice = 0;

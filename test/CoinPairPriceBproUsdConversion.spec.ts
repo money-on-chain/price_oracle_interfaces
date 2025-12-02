@@ -33,7 +33,7 @@ describe("CoinPairPriceBproUsdConversion", () => {
 
     // BTC provider (we just need validity true)
     const MockProv = await ethers.getContractFactory("MockPriceProvider");
-    const prov = await MockProv.deploy(to18("50000"), true);
+    const prov = await MockProv.deploy(to18("3"), true);
 
     // MoCState.bproUsdPrice = 3e18
     const MockMoC = await ethers.getContractFactory("MockMoCState");
@@ -57,7 +57,7 @@ describe("CoinPairPriceBproUsdConversion", () => {
     const base = await MockCPP.deploy(to18("2"), false, 1000); // valid=false
 
     const MockProv = await ethers.getContractFactory("MockPriceProvider");
-    const prov = await MockProv.deploy(to18("50000"), true);
+    const prov = await MockProv.deploy(to18("3"), true);
 
     const MockMoC = await ethers.getContractFactory("MockMoCState");
     const moc = await MockMoC.deploy(to18("3"), prov.target);
@@ -75,7 +75,7 @@ describe("CoinPairPriceBproUsdConversion", () => {
     const base = await MockCPP.deploy(to18("2"), true, 1000);
 
     const MockProv = await ethers.getContractFactory("MockPriceProvider");
-    const prov = await MockProv.deploy(to18("50000"), false); // valid=false
+    const prov = await MockProv.deploy(to18("3"), false); // valid=false
 
     const MockMoC = await ethers.getContractFactory("MockMoCState");
     const moc = await MockMoC.deploy(to18("3"), prov.target);
@@ -93,7 +93,7 @@ describe("CoinPairPriceBproUsdConversion", () => {
     const base = await MockCPP.deploy(to18("1"), true, 424242);
 
     const MockProv = await ethers.getContractFactory("MockPriceProvider");
-    const prov = await MockProv.deploy(to18("50000"), true);
+    const prov = await MockProv.deploy(to18("3"), true);
 
     const MockMoC = await ethers.getContractFactory("MockMoCState");
     const moc = await MockMoC.deploy(to18("1"), prov.target);
@@ -120,7 +120,7 @@ describe("CoinPairPriceBproUsdConversion", () => {
 
     // BTC provider: valid and non-zero (we only care about the validity gate)
     const MockProv = await ethers.getContractFactory("MockPriceProvider");
-    const prov = await MockProv.deploy(to18("50000"), true);
+    const prov = await MockProv.deploy(to18("1"), true);
 
     // MoCState with BPro/USD price; luego lo ajustamos para forzar resto
     const MockMoC = await ethers.getContractFactory("MockMoCState");
@@ -134,7 +134,7 @@ describe("CoinPairPriceBproUsdConversion", () => {
     const a = to18("1") + 1n; // bproUsdPrice
     const b = to18("1") + 1n; // coinpair price
 
-    await moc.setBproUsdPrice(a);
+    await prov.setPriceUint(a, true);
     await base.setPriceUint(b, true);
 
     const [price, valid] = await adapter.peek();

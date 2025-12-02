@@ -25,7 +25,7 @@ contract MockMoCState is IMocState {
   }
 
   function bproTecPrice() external pure returns (uint256) {
-    return 0;
+    return 1e18; // To keep calculations simple.
   }
 
   function getBtcPriceProvider() external view returns (address) {
