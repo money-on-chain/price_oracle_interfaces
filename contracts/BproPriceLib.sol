@@ -19,6 +19,7 @@ library BproPriceLib {
     uint256 internal constant MOC_PRECISION = 1e18;
     uint256 internal constant RESERVE_PRECISION = 1e18;
     bytes32 internal constant BUCKET_C0 = "C0";
+    bytes32 internal constant BUCKET_X2 = "X2";
     uint256 internal constant UINT256_MAX = type(uint256).max;
 
     function bproUsdPriceSafe(
@@ -40,9 +41,37 @@ library BproPriceLib {
             return 1; // wei
         }
 
-        uint256 nB = self.getBucketNBTC(BUCKET_C0);
-        uint256 lb = lockedBitcoin(self, btcPrice, self.getBucketNDoc(BUCKET_C0));
-        uint256 nTp = self.getBucketNBPro(BUCKET_C0);
+        return bproTecPriceHelper(self, BUCKET_C0, btcPrice);
+    }
+
+    function globalCoverage(
+        IMocState self,
+        bytes32 btcPrice
+    ) internal view returns (uint256) {
+        uint256 lB = lockedBitcoin(self, btcPrice, self.docTotalSupply());
+        uint256 nB = collateralRbtcInSystem(self, btcPrice);
+
+        if (lB == 0) {
+            return UINT256_MAX;
+        }
+
+        return (nB * MOC_PRECISION) / lB;
+    }
+
+    function collateralRbtcInSystem(IMocState self, bytes32 btcPrice) public view returns(uint256) {
+        uint256 rbtcInBtcx =  self.getBucketNBPro(BUCKET_X2) * bproTecPriceHelper(self, BUCKET_X2, btcPrice) / MOC_PRECISION;
+        uint256 rbtcInBag = self.getInrateBag(BUCKET_C0);
+        return self.rbtcInSystem() - rbtcInBtcx - rbtcInBag;
+    }
+
+    function bproTecPriceHelper(
+        IMocState self,
+        bytes32 bucket,
+        bytes32 btcPrice
+    ) internal view returns (uint256) {
+        uint256 nB = self.getBucketNBTC(bucket);
+        uint256 lb = lockedBitcoin(self, btcPrice, self.getBucketNDoc(bucket));
+        uint256 nTp = self.getBucketNBPro(bucket);
 
         // Liquidation happens before this condition turns true
         if (nB < lb) {
@@ -55,20 +84,6 @@ library BproPriceLib {
 
         // ([RES] - [RES]) * [MOC] / [MOC]
         return (nB - lb) * MOC_PRECISION / nTp;
-    }
-
-    function globalCoverage(
-        IMocState self,
-        bytes32 btcPrice
-    ) internal view returns (uint256) {
-        uint256 lB = lockedBitcoin(self, btcPrice, self.docTotalSupply());
-        uint256 nB = self.collateralRbtcInSystem();
-
-        if (lB == 0) {
-            return UINT256_MAX;
-        }
-
-        return (nB * MOC_PRECISION) / lB;
     }
 
     function lockedBitcoin(

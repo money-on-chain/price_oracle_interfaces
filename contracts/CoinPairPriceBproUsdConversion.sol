@@ -45,7 +45,6 @@ contract CoinPairPriceBproUsdConversion is CoinPairPrice {
     // 1) Read both data sources (even if they report invalid)
     (bytes32 pairRateBytes, bool pairRateIsValid) = coinpairprice.peek();
     (bytes32 btcPrice, bool btcIsValid) = IPriceProvider(mocState.getBtcPriceProvider()).peek();
-
     // 2) Convert the external pair rate and get BPRO/USD price from MoCState
     uint256 pairRate = uint256(pairRateBytes); // assumed to have 18 decimals
 

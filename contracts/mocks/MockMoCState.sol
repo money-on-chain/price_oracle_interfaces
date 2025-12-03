@@ -40,12 +40,16 @@ contract MockMoCState is IMocState {
     return _bproUsdPrice; // Exactly 1 BTC worth of DOC at current price.
   }
 
-  function collateralRbtcInSystem() external view returns(uint256) {
-    return 5e18; // 5BTC is enough collateral for 1BTC worth of DOC.
-  } 
+  function getInrateBag(bytes32 bucket) external view returns(uint256) {
+    return 0; // No inrate BTC
+  }
+
+  function rbtcInSystem() external view returns (uint256) {
+    return 5e18; // 5BTC total backing.
+  }
 
   function getBucketNBTC(bytes32 /*bucket*/) external view returns(uint256) {
-    return 5e18; // 5BTC, same as collateral.
+    return 5e18; // 5BTC, all collateral in the system.
   }
 
   function getBucketNBPro(bytes32 /*bucket*/) external view returns(uint256) {

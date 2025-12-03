@@ -8,7 +8,7 @@ interface IMocState {
 
   // Relation between DOC and dollar
   function peg() external view returns (uint256);
-  
+
   /**
    * @dev BPro USD PRICE
    * @return the BPro USD Price [using mocPrecision]
@@ -38,10 +38,9 @@ interface IMocState {
   */
   function getProtected() external view returns(uint256);
 
-  /**
-    @dev Amount of Bitcoins in the system excluding BTCx values and interests holdings
-  */
-  function collateralRbtcInSystem() external view returns(uint256); 
+  function getInrateBag(bytes32 bucket) external view returns(uint256);
+
+  function rbtcInSystem() external view returns (uint256);
 
   function getBucketNBTC(bytes32 bucket) external view returns(uint256);
 
