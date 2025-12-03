@@ -5,6 +5,7 @@ import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import "./interfaces/IPriceProvider.sol";
 import "./interfaces/IMocState.sol";
 import "./interfaces/ICoinPairPrice.sol";
+import "./BproPriceLib.sol";
 
 /// @title PriceProviderFlipPerBpro
 /// @notice Exposes FLIP/BPRO price using two USD-denominated sources:
@@ -17,6 +18,7 @@ import "./interfaces/ICoinPairPrice.sol";
 /// - Result is 18-decimal fixed point.
 /// - getLastPublicationBlock(): min(lastPub of FLIP/USD, lastPub of MoC's BTC provider).
 contract PriceProviderFlipPerBpro is IPriceProvider {
+  using BproPriceLib for IMocState;
   IPriceProvider public immutable flipUsd; // expects 18d
   IMocState public immutable mocState;
 
@@ -34,14 +36,14 @@ contract PriceProviderFlipPerBpro is IPriceProvider {
     if (baseProvider == address(0)) return (bytes32(0), false);
 
     // 2) Get the base pair rate validity (generic variable name)
-    (, bool pairRateIsValid) = ICoinPairPrice(baseProvider).peek();
+    (bytes32 btcPrice, bool pairRateIsValid) = ICoinPairPrice(baseProvider).peek();
 
     // 3) Get FLIP/USD from external provider (18 decimals)
     (bytes32 flipRateBytes, bool flipRateIsValid) = flipUsd.peek();
     uint256 flipRate = uint256(flipRateBytes);
 
     // 4) Get BPRO/USD from MoCState (18 decimals)
-    uint256 bproUsdPrice = mocState.bproUsdPrice();
+    uint256 bproUsdPrice = mocState.bproUsdPriceSafe(btcPrice);
 
     // 5) Compute FLIP/BPRO = (FLIP/USD) / (BPRO/USD) = (flipRate * 1e18) / bproUsdPrice
     uint256 flipPerBpro = 0;

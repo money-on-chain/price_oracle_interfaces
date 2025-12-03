@@ -6,6 +6,7 @@ import "./CoinPairPrice.sol";
 import "./interfaces/IMocState.sol";
 import "./interfaces/IPriceProvider.sol";
 import "./interfaces/ICoinPairPrice.sol";
+import "./BproPriceLib.sol";
 
 /**
  * @title CoinPairPriceBproUsdConversion
@@ -29,6 +30,8 @@ import "./interfaces/ICoinPairPrice.sol";
  */
 
 contract CoinPairPriceBproUsdConversion is CoinPairPrice {
+  using BproPriceLib for IMocState;
+
   IMocState public mocState;
   uint256 public constant RATE_PRECISION = 1e18;
 
@@ -41,11 +44,11 @@ contract CoinPairPriceBproUsdConversion is CoinPairPrice {
   function peek() external view override returns (bytes32, bool) {
     // 1) Read both data sources (even if they report invalid)
     (bytes32 pairRateBytes, bool pairRateIsValid) = coinpairprice.peek();
-    (, bool btcIsValid) = IPriceProvider(mocState.getBtcPriceProvider()).peek();
-
+    (bytes32 btcPrice, bool btcIsValid) = IPriceProvider(mocState.getBtcPriceProvider()).peek();
     // 2) Convert the external pair rate and get BPRO/USD price from MoCState
     uint256 pairRate = uint256(pairRateBytes); // assumed to have 18 decimals
-    uint256 bproUsdPrice = mocState.bproUsdPrice(); // 18 decimals
+
+    uint256 bproUsdPrice = mocState.bproUsdPriceSafe(btcPrice);
 
     // 3) Try to calculate the conversion regardless of validity flags
     uint256 calculatedPrice = 0;
