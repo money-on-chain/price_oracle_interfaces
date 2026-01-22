@@ -18,7 +18,6 @@ import "./BproPriceLib.sol";
 /// - Result is 18-decimal fixed point.
 /// - getLastPublicationBlock(): min(lastPub of FLIP/USD, lastPub of MoC's BTC provider).
 contract PriceProviderFlipPerBpro is IPriceProvider {
-  using BproPriceLib for IMocState;
   IPriceProvider public immutable flipUsd; // expects 18d
   IMocState public immutable mocState;
 
@@ -43,7 +42,7 @@ contract PriceProviderFlipPerBpro is IPriceProvider {
     uint256 flipRate = uint256(flipRateBytes);
 
     // 4) Get BPRO/USD from MoCState (18 decimals)
-    uint256 bproUsdPrice = mocState.bproUsdPriceSafe(btcPrice);
+    uint256 bproUsdPrice = BproPriceLib.bproUsdPriceSafe(mocState, btcPrice);
 
     // 5) Compute FLIP/BPRO = (FLIP/USD) / (BPRO/USD) = (flipRate * 1e18) / bproUsdPrice
     uint256 flipPerBpro = 0;

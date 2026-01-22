@@ -16,81 +16,38 @@ import "./interfaces/IMocState.sol";
  */
 
 library BproPriceLib {
-    uint256 internal constant MOC_PRECISION = 1e18;
-    uint256 internal constant RESERVE_PRECISION = 1e18;
-    bytes32 internal constant BUCKET_C0 = "C0";
-    bytes32 internal constant BUCKET_X2 = "X2";
-    uint256 internal constant UINT256_MAX = type(uint256).max;
+  uint256 internal constant MOC_PRECISION = 1e18;
+  uint256 internal constant RESERVE_PRECISION = 1e18;
+  bytes32 internal constant BUCKET_C0 = "C0";
 
-    function bproUsdPriceSafe(
-        IMocState self,
-        bytes32 btcPrice
-    ) internal view returns (uint256) {
-        return uint256(btcPrice) * bproTecPriceSafe(self, btcPrice) / MOC_PRECISION; // 18 decimals
+  function bproUsdPriceSafe(IMocState mocState, bytes32 btcPrice) internal view returns (uint256) {
+    return (uint256(btcPrice) * bproTecPriceHelper(mocState, btcPrice)) / MOC_PRECISION; // 18 decimals
+  }
+
+  function bproTecPriceHelper(
+    IMocState mocState,
+    bytes32 btcPrice
+  ) internal view returns (uint256) {
+    if (mocState.state() == IMocState.States.Liquidated) {
+      return 0;
     }
 
-    function bproTecPriceSafe(
-        IMocState self,
-        bytes32 btcPrice
-    ) internal view returns (uint256) {
-        uint256 cov = globalCoverage(self, btcPrice);
-        uint256 coverageThreshold = uint256(1) * MOC_PRECISION;
-
-        // If Protected Mode is reached and below threshold
-        if (cov <= self.getProtected() && cov < coverageThreshold) {
-            return 1; // wei
-        }
-
-        return bproTecPriceHelper(self, BUCKET_C0, btcPrice);
+    uint256 nBpro = mocState.getBucketNBPro(BUCKET_C0);
+    if (nBpro == 0) {
+      return MOC_PRECISION;
     }
 
-    function globalCoverage(
-        IMocState self,
-        bytes32 btcPrice
-    ) internal view returns (uint256) {
-        uint256 lB = lockedBitcoin(self, btcPrice, self.docTotalSupply());
-        uint256 nB = collateralRbtcInSystem(self, btcPrice);
-
-        if (lB == 0) {
-            return UINT256_MAX;
-        }
-
-        return (nB * MOC_PRECISION) / lB;
+    uint256 nRbtc = mocState.getBucketNBTC(BUCKET_C0);
+    uint256 lockedRbtc = lockedBitcoin(btcPrice, mocState.getBucketNDoc(BUCKET_C0));
+    if (nRbtc <= lockedRbtc) {
+      return 0;
     }
 
-    function collateralRbtcInSystem(IMocState self, bytes32 btcPrice) public view returns(uint256) {
-        uint256 rbtcInBtcx =  self.getBucketNBPro(BUCKET_X2) * bproTecPriceHelper(self, BUCKET_X2, btcPrice) / MOC_PRECISION;
-        uint256 rbtcInBag = self.getInrateBag(BUCKET_C0);
-        return self.rbtcInSystem() - rbtcInBtcx - rbtcInBag;
-    }
+    // ([RES] - [RES]) * [MOC] / [MOC]
+    return ((nRbtc - lockedRbtc) * MOC_PRECISION) / nBpro;
+  }
 
-    function bproTecPriceHelper(
-        IMocState self,
-        bytes32 bucket,
-        bytes32 btcPrice
-    ) internal view returns (uint256) {
-        uint256 nB = self.getBucketNBTC(bucket);
-        uint256 lb = lockedBitcoin(self, btcPrice, self.getBucketNDoc(bucket));
-        uint256 nTp = self.getBucketNBPro(bucket);
-
-        // Liquidation happens before this condition turns true
-        if (nB < lb) {
-            return 0;
-        }
-
-        if (nTp == 0) {
-            return MOC_PRECISION;
-        }
-
-        // ([RES] - [RES]) * [MOC] / [MOC]
-        return (nB - lb) * MOC_PRECISION / nTp;
-    }
-
-    function lockedBitcoin(
-        IMocState self,
-        bytes32 btcPrice,
-        uint256 nDoc
-    ) internal view returns (uint256) {
-        return (nDoc * self.peg() * RESERVE_PRECISION) / uint256(btcPrice);
-    }
+  function lockedBitcoin(bytes32 btcPrice, uint256 nDoc) internal pure returns (uint256) {
+    return (nDoc * RESERVE_PRECISION) / uint256(btcPrice);
+  }
 }

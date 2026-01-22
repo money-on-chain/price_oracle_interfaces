@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import "./CoinPairPrice.sol";
 import "./interfaces/IMocState.sol";
 import "./interfaces/IPriceProvider.sol";
@@ -18,7 +17,7 @@ import "./BproPriceLib.sol";
  *  - The MoCState contract (`mocState`) that provides the BPRO/USD price.
  *
  * By multiplying BPRO/USD with ARS/USD, the resulting price is BPRO/ARS,
- * normalized to 18 decimals using Math.mulDiv to avoid precision loss or overflow.
+ * normalized to 18 decimals
  *
  * Formula:
  *    BPRO/ARS = (BPRO/USD) * (ARS/USD)
@@ -30,31 +29,28 @@ import "./BproPriceLib.sol";
  */
 
 contract CoinPairPriceBproUsdConversion is CoinPairPrice {
-  using BproPriceLib for IMocState;
-
-  IMocState public mocState;
+  IMocState public immutable mocState;
+  IPriceProvider public immutable btcPriceProvider;
   uint256 public constant RATE_PRECISION = 1e18;
 
   constructor(ICoinPairPrice _coinpairprice, IMocState _mocState) CoinPairPrice(_coinpairprice) {
     require(address(_mocState) != address(0), "mocState address is zero");
     mocState = _mocState;
+    btcPriceProvider = IPriceProvider(mocState.getBtcPriceProvider());
   }
 
   /// NOTE: Assumes coinpairpricePrice has 18 decimals. If not, scale here.
   function peek() external view override returns (bytes32, bool) {
     // 1) Read both data sources (even if they report invalid)
     (bytes32 pairRateBytes, bool pairRateIsValid) = coinpairprice.peek();
-    (bytes32 btcPrice, bool btcIsValid) = IPriceProvider(mocState.getBtcPriceProvider()).peek();
+    (bytes32 btcPrice, bool btcIsValid) = btcPriceProvider.peek();
     // 2) Convert the external pair rate and get BPRO/USD price from MoCState
     uint256 pairRate = uint256(pairRateBytes); // assumed to have 18 decimals
 
-    uint256 bproUsdPrice = mocState.bproUsdPriceSafe(btcPrice);
+    uint256 bproUsdPrice = BproPriceLib.bproUsdPriceSafe(mocState, btcPrice);
 
-    // 3) Try to calculate the conversion regardless of validity flags
-    uint256 calculatedPrice = 0;
-    if (pairRate != 0 && bproUsdPrice != 0) {
-      calculatedPrice = Math.mulDiv(bproUsdPrice, pairRate, RATE_PRECISION);
-    }
+    // 3) calculate the conversion regardless of validity flags
+    uint256 calculatedPrice = (bproUsdPrice * pairRate) / RATE_PRECISION;
 
     // 4) Valid if both sources are valid and the result is non-zero
     bool overallValid = pairRateIsValid && btcIsValid && calculatedPrice != 0;

@@ -8,9 +8,12 @@ import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
 import "./interfaces/IERC20Metadata.sol";
 
 contract UniswapV3Oracle {
-  IUniswapV3Pool public _uniswapV3Pool;
-  uint32 public _twapInterval;
-  address public _quoteToken;
+  IUniswapV3Pool public immutable _uniswapV3Pool;
+  uint32 public immutable _twapInterval;
+  address public immutable _quoteToken;
+  uint256 public immutable _quoteTokenIdx;
+  uint256 public immutable _otherTokenIdx;
+  uint256 public immutable _adjustedDecimals;
 
   /// @param pool The Uniswap v3 pool to get the price of the token
   /// @param twapInterval The time interval in seconds to get the twap over
@@ -21,19 +24,24 @@ contract UniswapV3Oracle {
       "at least one token from the pool must be the quoted token"
     );
     require(twapInterval > 0, "twap interval must be > 0");
+    
+    // Use ternary to assign immutable variables (can't use if statements for immutables)
+    _quoteTokenIdx = pool.token0() == quoteToken ? 0 : 1;
+    _otherTokenIdx = pool.token0() == quoteToken ? 1 : 0;
+    
     _uniswapV3Pool = pool;
     _twapInterval = twapInterval;
     _quoteToken = quoteToken;
+    _adjustedDecimals = getAdjustedDecimals(pool, quoteToken);
   }
 
-  function getPrice() public view virtual returns (uint256 price) {
-    price = getPriceFromPool(_uniswapV3Pool, _twapInterval, _quoteToken);
+  function getPrice() public view virtual returns (uint256) {
+    return getPriceFromPool(_uniswapV3Pool, _twapInterval);
   }
 
   /// legacy peek function
-  function peek() external view virtual returns (bytes32 price, bool isValid) {
-    price = bytes32(getPrice());
-    isValid = getIsValid();
+  function peek() external view virtual returns (bytes32, bool) {
+    return (bytes32(getPrice()), getIsValid());
   }
 
   // From an oracle perspective, these prices are 'live'.
@@ -49,47 +57,33 @@ contract UniswapV3Oracle {
   /// @notice Get the price of a token
   /// @param pool The Uniswap v3 pool to get the price of the token
   /// @param twapInterval The time interval in seconds to get the twap over
-  /// @param quoteToken The token to quote the price in terms of
   function getPriceFromPool(
     IUniswapV3Pool pool,
-    uint32 twapInterval,
-    address quoteToken
+    uint32 twapInterval
   ) internal view returns (uint256) {
-    uint256 decimals = getAdjustedDecimals(pool, quoteToken);
     return
       getActualPrice(
-        getPriceX96FromSqrtPriceX96(getSqrtTwapX96(pool, twapInterval, quoteToken)),
-        decimals
+        getPriceX96FromSqrtPriceX96(getSqrtTwapX96(pool, twapInterval)),
+        _adjustedDecimals
       );
   }
 
   /// @notice Get the current twap price of a pool
   /// @param pool The Uniswap v3 pool to get the twap price of
   /// @param twapInterval The time interval in seconds to get the twap over
-  /// @param quoteToken The token to quote the price in terms of
   /// @return sqrtPriceX96 The time weighted average price
   function getSqrtTwapX96(
     IUniswapV3Pool pool,
-    uint32 twapInterval,
-    address quoteToken
+    uint32 twapInterval
   ) private view returns (uint160 sqrtPriceX96) {
-    require(
-      pool.token0() == quoteToken || pool.token1() == quoteToken,
-      "at least one token from the pool must be the quoted token"
-    );
-    require(twapInterval > 0, "twap interval must be > 0");
     uint32[] memory secondsAgos = new uint32[](2);
     secondsAgos[0] = twapInterval; // from (before)
     secondsAgos[1] = 0; // to (now)
 
     (int56[] memory tickCumulatives, ) = pool.observe(secondsAgos);
-    (uint256 quoteTokenIdx, uint256 otherTokenIdx) = (0, 1);
-    if (pool.token1() == quoteToken) {
-      (quoteTokenIdx, otherTokenIdx) = (1, 0);
-    }
     // tick(imprecise as it's an integer) to price
     sqrtPriceX96 = TickMath.getSqrtRatioAtTick(
-      int24((tickCumulatives[quoteTokenIdx] - tickCumulatives[otherTokenIdx]) / twapInterval)
+      int24((tickCumulatives[_quoteTokenIdx] - tickCumulatives[_otherTokenIdx]) / twapInterval)
     );
   }
 

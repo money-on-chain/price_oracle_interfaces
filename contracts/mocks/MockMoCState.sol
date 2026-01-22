@@ -28,7 +28,7 @@ contract MockMoCState is IMocState {
     return 1e18; // To keep calculations, 1BTC is 1BPRO
   }
 
-  function getProtected() external view returns(uint256) {
+  function getProtected() external pure returns (uint256) {
     return 2e18;
   }
 
@@ -36,31 +36,35 @@ contract MockMoCState is IMocState {
     return _btcProvider;
   }
 
-  function docTotalSupply() external view returns(uint256) {
+  function docTotalSupply() external view returns (uint256) {
     return _bproUsdPrice; // Exactly 1 BTC worth of DOC at current price.
   }
 
-  function getInrateBag(bytes32 bucket) external view returns(uint256) {
+  function getInrateBag(bytes32 /*bucket*/) external pure returns (uint256) {
     return 0; // No inrate BTC
   }
 
-  function rbtcInSystem() external view returns (uint256) {
+  function rbtcInSystem() external pure returns (uint256) {
     return 5e18; // 5BTC total backing.
   }
 
-  function getBucketNBTC(bytes32 /*bucket*/) external view returns(uint256) {
+  function getBucketNBTC(bytes32 /*bucket*/) external pure returns (uint256) {
     return 5e18; // 5BTC, all collateral in the system.
   }
 
-  function getBucketNBPro(bytes32 /*bucket*/) external view returns(uint256) {
+  function getBucketNBPro(bytes32 /*bucket*/) external pure returns (uint256) {
     return 4e18; // 4BPRO, which equals 4BTC at current 1:1 rate.
   }
 
-  function getBucketNDoc(bytes32 /*bucket*/) external view returns(uint256) {
+  function getBucketNDoc(bytes32 /*bucket*/) external view returns (uint256) {
     return _bproUsdPrice; // Exactly 1 BTC worth of DOC at current price.
   }
 
-  function peg() external view returns (uint256) {
+  function peg() external pure returns (uint256) {
     return 1; // Peg is 1 on MOC. (not 1e18, just 1).
+  }
+
+  function state() external pure returns (States) {
+    return States.AboveCobj;
   }
 }

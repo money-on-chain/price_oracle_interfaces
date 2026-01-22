@@ -13,7 +13,6 @@ import "./BproPriceLib.sol";
 /// - Requires the BTC price provider inside MoCState to be valid (gate for freshness).
 /// - Returns 18-decimal fixed-point value encoded in bytes32.
 contract PriceProviderBproUsdV1 is IPriceProvider {
-  using BproPriceLib for IMocState;
   IMocState public mocState;
 
   constructor(IMocState _mocState) {
@@ -32,7 +31,7 @@ contract PriceProviderBproUsdV1 is IPriceProvider {
 
     // 3) Convert and retrieve the BPRO/USD price from MoCState
     uint256 pairRate = uint256(pairRateBytes);
-    uint256 bproUsdPrice = mocState.bproUsdPriceSafe(pairRateBytes); // always 18 decimals
+    uint256 bproUsdPrice = BproPriceLib.bproUsdPriceSafe(mocState, pairRateBytes); // always 18 decimals
 
     // 4) Always attempt to return the result even if validity is false
     //    Only return zero if there is no data available
