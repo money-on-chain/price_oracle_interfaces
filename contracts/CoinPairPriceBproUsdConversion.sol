@@ -30,13 +30,14 @@ import "./BproPriceLib.sol";
 
 contract CoinPairPriceBproUsdConversion is CoinPairPrice {
   IMocState public immutable mocState;
-  IPriceProvider public immutable btcPriceProvider;
+  /// @notice Cached at deploy time for gas savings. Redeploy if MocState changes its btcPriceProvider.
+  ICoinPairPrice public immutable btcPriceProvider;
   uint256 public constant RATE_PRECISION = 1e18;
 
   constructor(ICoinPairPrice _coinpairprice, IMocState _mocState) CoinPairPrice(_coinpairprice) {
     require(address(_mocState) != address(0), "mocState address is zero");
     mocState = _mocState;
-    btcPriceProvider = IPriceProvider(mocState.getBtcPriceProvider());
+    btcPriceProvider = ICoinPairPrice(mocState.getBtcPriceProvider());
   }
 
   /// NOTE: Assumes coinpairpricePrice has 18 decimals. If not, scale here.
