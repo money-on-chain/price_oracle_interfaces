@@ -28,8 +28,8 @@ contract UniswapV3OracleUSD is UniswapV3Oracle {
   /// legacy peek function
   function peek() public view override returns (bytes32 price, bool isValid) {
     (bytes32 btcPrice, bool btcPriceIsValid) = _btcPriceProvider.peek();
-    uint256 priceFromPool = getPriceFromPool(_uniswapV3Pool, _twapInterval, _wrappedToken);
-    price = bytes32(FullMath.mulDiv(uint256(btcPrice), priceFromPool, 10 ** 18));
+    uint256 priceFromPool = getPriceFromPool(_uniswapV3Pool, _twapInterval);
+    price = bytes32((uint256(btcPrice) * priceFromPool) / 10 ** 18);
     isValid = btcPriceIsValid;
   }
 
