@@ -17,10 +17,7 @@ contract PriceProviderInverse {
   function peek() public view returns (bytes32 price, bool isValid) {
     (bytes32 priceBase, bool isValidBase) = _priceProvider.peek();
     uint256 baseUint = uint256(priceBase);
-    uint256 inverse = 0;
-    if (baseUint != 0) {
-      inverse = FullMath.mulDiv(10 ** 18, 10 ** 18, baseUint);
-    }
+    uint256 inverse = FullMath.mulDiv(10 ** 18, 10 ** 18, baseUint);
     price = bytes32(inverse);
     isValid = isValidBase;
   }
@@ -31,7 +28,7 @@ contract PriceProviderInverse {
   }
 
   function getIsValid() public view returns (bool peekIsValid) {
-    (, peekIsValid) = peek();
+    (, peekIsValid) = _priceProvider.peek();
   }
 
   function getLastPublicationBlock() external view returns (uint256) {
