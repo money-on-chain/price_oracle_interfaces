@@ -7,8 +7,8 @@ import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
 // A price provider oracle multiplying the result from two others.
 // NOTICE: Both prices must use 18 decimal places.
 contract PriceProviderMul {
-  IPriceProvider public _priceProvider;
-  IPriceProvider public _priceProviderMultiplier;
+  IPriceProvider public immutable _priceProvider;
+  IPriceProvider public immutable _priceProviderMultiplier;
 
   /// @param priceProvider The Price Provider address
   /// @param priceProviderMultiplier The Multiplier Price Provider address

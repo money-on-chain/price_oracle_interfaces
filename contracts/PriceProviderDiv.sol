@@ -7,8 +7,8 @@ import "@uniswap/v3-core/contracts/libraries/FullMath.sol";
 // A price provider oracle dividing the result from two others.
 // NOTICE: Both prices must be expressed as wey with 18 decimal places.
 contract PriceProviderDiv {
-  IPriceProvider public _priceProvider;
-  IPriceProvider public _priceProviderDivisor;
+  IPriceProvider public immutable _priceProvider;
+  IPriceProvider public immutable _priceProviderDivisor;
 
   /// @param priceProvider The Price Provider address
   /// @param priceProviderDivisor The Divisor Price Provider address
