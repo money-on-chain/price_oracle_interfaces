@@ -19,9 +19,10 @@ describe("Multiplying and Dividing Oracles", () => {
   let oracleOld: MockCoinPairPrice;
   let oracleZero: MockCoinPairPrice;
   let deployer: HardhatEthersSigner;
+  let connected: Awaited<ReturnType<typeof network.connect>>;
 
   before(async () => {
-    const connected = await network.connect();
+    connected = await network.connect();
     [deployer] = await connected.ethers.getSigners();
     const factory = new MockCoinPairPrice__factory(deployer);
 
@@ -118,10 +119,10 @@ describe("Multiplying and Dividing Oracles", () => {
       expect(await oracle.getPrice()).to.eq(parseEther("0.333333333333333333"));
     });
 
-    it("Returns zero when the base price is zero", async () => {
+    it("Reverts when the base price is zero", async () => {
       const oracle = await new PriceProviderInverse__factory(deployer).deploy(oracleZero);
+      await expect(oracle.getPrice()).to.be.revert(connected.ethers);
       expect(await oracle.getIsValid()).to.be.true;
-      expect(await oracle.getPrice()).to.equal(0);
     });
   });
 });
