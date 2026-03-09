@@ -6,10 +6,14 @@ import "../interfaces/IMocState.sol";
 contract MockMoCState is IMocState {
   uint256 private _bproUsdPrice;
   address private _btcProvider;
+  uint256 private _bucketNBTC;
+  uint256 private _bucketNDoc;
 
   constructor(uint256 initialBproUsdPrice, address initialBtcProvider) {
     _bproUsdPrice = initialBproUsdPrice;
     _btcProvider = initialBtcProvider;
+    _bucketNBTC = 5e18;
+    _bucketNDoc = initialBproUsdPrice;
   }
 
   function setBproUsdPrice(uint256 newPrice) external {
@@ -18,6 +22,14 @@ contract MockMoCState is IMocState {
 
   function setBtcPriceProvider(address newProvider) external {
     _btcProvider = newProvider;
+  }
+
+  function setBucketNBTC(uint256 newValue) external {
+    _bucketNBTC = newValue;
+  }
+
+  function setBucketNDoc(uint256 newValue) external {
+    _bucketNDoc = newValue;
   }
 
   function bproUsdPrice() external view returns (uint256) {
@@ -48,8 +60,8 @@ contract MockMoCState is IMocState {
     return 5e18; // 5BTC total backing.
   }
 
-  function getBucketNBTC(bytes32 /*bucket*/) external pure returns (uint256) {
-    return 5e18; // 5BTC, all collateral in the system.
+  function getBucketNBTC(bytes32 /*bucket*/) external view returns (uint256) {
+    return _bucketNBTC; // configurable for tests.
   }
 
   function getBucketNBPro(bytes32 /*bucket*/) external pure returns (uint256) {
@@ -57,7 +69,7 @@ contract MockMoCState is IMocState {
   }
 
   function getBucketNDoc(bytes32 /*bucket*/) external view returns (uint256) {
-    return _bproUsdPrice; // Exactly 1 BTC worth of DOC at current price.
+    return _bucketNDoc; // configurable for tests.
   }
 
   function peg() external pure returns (uint256) {
