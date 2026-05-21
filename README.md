@@ -6,6 +6,14 @@ All the contracts referenced below are verified on Blockscout. Readers should us
 
 Money On Chain documentation often uses `BTC` and `RBTC` interchangeably at the economic level. On Rootstock, the on-chain collateral asset is `RBTC`.
 
+## Table of contents
+
+- [BTC/USD](#btcusd)
+- [DOC/USD](#docusd)
+- [BPRO/BTC](#bprobtc)
+- [BPRO/USD](#bprousd)
+- [Off-chain price sources](#off-chain-price-sources)
+
 ## Recommended on-chain sources
 
 For MoC users that need a protocol-aligned on-chain price, the recommended sources are:
@@ -62,7 +70,7 @@ Address: `0x6a343488338b944c6FCc89906646Fac1e8e91cE5`
 
 This contract provides the `DOC/USD` price for the DoC bucket.
 
-Operationally, the value is usually `1e18`, meaning `1 DOC = 1 USD`. The provider does not simply hardcode `1`. Internally it reads MoC state plus the protocol's existing `BTC/USD` provider and computes the DoC price from protocol balances.
+Operationally, the value is usually `1e18`, meaning `1 DOC = 1 USD`. The provider does not simply hardcode `1`. Internally it reads MoC state plus the protocol's existing `BTC/USD` provider and computes the DoC price from protocol TVL. 
 
 The implementation obtains the upstream BTC price provider from the main MoC state contract via `mocState.getBtcPriceProvider()`, then uses that oracle price together with the `C0` bucket balances to derive `DOC/USD`.
 
@@ -80,9 +88,7 @@ Where:
 This means:
 
 - when the bucket is fully covered or overcollateralized, the result is capped at `1e18`
-- when coverage is insufficient, the result falls below `1e18`
-
-So the price is usually `1`, but in protocol stress situations it can be lower.
+- when coverage is insufficient, the result falls below `1e18`. Given how the Money on Chain is over-collateralized, the peg is unlikely to ever be lost, and has never been lost, but using this price provider you are protected regardless.
 
 ### How to use `peek()`
 
@@ -187,7 +193,9 @@ Blockscout:
 - Verified source: <https://rootstock.blockscout.com/address/0x3955BBA7bBbbF10e350Df341dB5f40842870d63a?tab=contract_code>
 - Read and write interface: <https://rootstock.blockscout.com/address/0x3955BBA7bBbbF10e350Df341dB5f40842870d63a?tab=read_write_contract>
 
-## Money On Chain price library
+## Off-chain price sources
+
+### Money On Chain price library
 
 Besides the recommended on-chain sources above, Money On Chain also maintains a general-purpose off-chain price library in Python: `moc_prices_source`.
 
