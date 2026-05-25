@@ -68,9 +68,9 @@ Blockscout:
 Contract: `PriceProviderDocUsd`  
 Address: `0x6a343488338b944c6FCc89906646Fac1e8e91cE5`
 
-This contract provides the `DOC/USD` price for the DoC bucket.
+This contract provides the `DOC/USD` price for the DoC bucket (how many USD per DOC)
 
-Operationally, the value is usually `1e18`, meaning `1 DOC = 1 USD`. The provider does not simply hardcode `1`. Internally it reads MoC state plus the protocol's existing `BTC/USD` provider and computes the DoC price from protocol TVL. 
+Operationally, the value is usually `1e18`, meaning `1 DOC = 1 USD`. The provider does not simply hardcode `1`. Internally it reads MoC state plus the protocol's existing `BTC/USD` provider and computes the DoC price from protocol TVL. If the protocol were to lose its peg, the value would be a fraction of 1, with 18 decimal places, ie: 0.9 USD per DOC.
 
 The implementation obtains the upstream BTC price provider from the main MoC state contract via `mocState.getBtcPriceProvider()`, then uses that oracle price together with the `C0` bucket balances to derive `DOC/USD`.
 
