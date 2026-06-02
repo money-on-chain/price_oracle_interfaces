@@ -40,7 +40,7 @@ npx hardhat test
 | --------- | ------------------------------------------ | --------------- | ----------------------- |
 | BPRO/USD  | 0xb45cEF263FFB8bbfA91c176C722692573c743ACe |                 | BPRO/USD price provider |
 | DOC/USD   | 0xaeB119cF080FDD668E6Ba845f663912C473778F8 |                 | DOC/USD price provider  |
-| DOC/USD (Chainlink) |                                              |                 | DOC/USD Chainlink-compatible adapter |
+| DOC/USD (Chainlink) | 0x12218198496f8e725af4FD353ab8D1e5eC6633C3 | 0xe64B6D86aA766dafbB957c32B215A64Fa3A632D8 | DOC/USD Chainlink-compatible adapter |
 | USD/ARS   | 0xCf330C2FE1e8b4980Fb19A310a32E2B119e4c1B1 |                 | USD/ARS price provider  |
 | USD/COP   | 0x81852EEEA69A20D12A47A257EA4756847527E9E5 |                 | USD/COP price provider  |
 | BPRO/ARS  | 0x6979513C5De144B31dD36d87892fD6CEF95Cf59A |                 | BPRO/ARS adapter        |
@@ -58,6 +58,8 @@ This price provider returns the MoC-derived DOC/USD value through a Chainlink-sh
 - Truncates the underlying 18-decimal DOC/USD value toward zero.
 - Exposes `updatedAt` and `startedAt` as an estimate derived from the upstream publication block and the configured Rootstock average block time.
 - Uses **24 seconds** as the deployment-time average block interval.
+- Testnet address: `0x12218198496f8e725af4FD353ab8D1e5eC6633C3`
+- Mainnet address: `0xe64B6D86aA766dafbB957c32B215A64Fa3A632D8`
 
 ### Deploy
 

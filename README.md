@@ -119,13 +119,20 @@ Blockscout:
 
 ## DOC/USD (Chainlink-compatible)
 
-Contract: `DocUsdPriceChainlinkCompat`
+Contract: `DocUsdPriceChainlinkCompat`  
+Testnet address: `0x12218198496f8e725af4FD353ab8D1e5eC6633C3`  
+Mainnet address: `0xe64B6D86aA766dafbB957c32B215A64Fa3A632D8`
 
 This adapter exposes the same MoC-derived DOC/USD price through a Chainlink-shaped interface for external consumers that expect `latestAnswer()` and `latestRoundData()`. The price is returned with **8 decimals** and is truncated toward zero from the underlying 18-decimal MoC value.
 
 The adapter also exposes `updatedAt` and `startedAt` through `latestRoundData()`. For Rootstock compatibility, those timestamps are estimated from the upstream publication block and the configured average block time. In this repository the deployment script passes **24 seconds** as the average block time.
 
 This keeps the on-chain price source aligned with MoC while presenting the read surface expected by Chainlink-style integrations.
+
+Blockscout:
+
+- Testnet verified source: <https://rootstock-testnet.blockscout.com/address/0x12218198496f8e725af4FD353ab8D1e5eC6633C3?tab=contract_code>
+- Mainnet verified source: <https://rootstock.blockscout.com/address/0xe64B6D86aA766dafbB957c32B215A64Fa3A632D8?tab=contract_code>
 
 ### How to use `latestRoundData()`
 
@@ -145,8 +152,8 @@ Semantics:
 
 Blockscout:
 
-- Verified source: pending deployment
-- Read and write interface: pending deployment
+- Testnet read and write interface: <https://rootstock-testnet.blockscout.com/address/0x12218198496f8e725af4FD353ab8D1e5eC6633C3?tab=read_write_contract>
+- Mainnet read and write interface: <https://rootstock.blockscout.com/address/0xe64B6D86aA766dafbB957c32B215A64Fa3A632D8?tab=read_write_contract>
 
 ## BPRO/BTC
 
