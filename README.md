@@ -10,6 +10,7 @@ Money On Chain documentation often uses `BTC` and `RBTC` interchangeably at the 
 
 - [BTC/USD](#btcusd)
 - [DOC/USD](#docusd)
+- [DOC/USD (Chainlink-compatible)](#docusd-chainlink-compatible)
 - [BPRO/BTC](#bprobtc)
 - [BPRO/USD](#bprousd)
 - [Off-chain price sources](#off-chain-price-sources)
@@ -20,6 +21,7 @@ For MoC users that need a protocol-aligned on-chain price, the recommended sourc
 
 - `BTC/USD` from `CoinPairPriceFree`
 - `DOC/USD` from `PriceProviderDocUsd`
+- `DOC/USD` (Chainlink-compatible) from `DocUsdPriceChainlinkCompat`
 - `BPRO/BTC` from the protocol-derived BPRO price provider
 - `BPRO/USD` from the protocol-derived BPRO price provider
 
@@ -114,6 +116,37 @@ Blockscout:
 
 - Verified source: <https://rootstock.blockscout.com/address/0x6a343488338b944c6FCc89906646Fac1e8e91cE5?tab=contract_code>
 - Read and write interface: <https://rootstock.blockscout.com/address/0x6a343488338b944c6FCc89906646Fac1e8e91cE5?tab=read_write_contract>
+
+## DOC/USD (Chainlink-compatible)
+
+Contract: `DocUsdPriceChainlinkCompat`
+
+This adapter exposes the same MoC-derived DOC/USD price through a Chainlink-shaped interface for external consumers that expect `latestAnswer()` and `latestRoundData()`. The price is returned with **8 decimals** and is truncated toward zero from the underlying 18-decimal MoC value.
+
+The adapter also exposes `updatedAt` and `startedAt` through `latestRoundData()`. For Rootstock compatibility, those timestamps are estimated from the upstream publication block and the configured average block time. In this repository the deployment script passes **24 seconds** as the average block time.
+
+This keeps the on-chain price source aligned with MoC while presenting the read surface expected by Chainlink-style integrations.
+
+### How to use `latestRoundData()`
+
+The main read method is:
+
+```solidity
+latestRoundData() returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
+```
+
+Semantics:
+
+- `answer` is `DOC/USD` with 8 decimals
+- `roundId` tracks the upstream publication block as the current round identifier
+- `startedAt` and `updatedAt` are the block-time estimate for that publication
+- `answeredInRound` equals the current round identifier
+- `getRoundData()` serves the current round and reverts for unsupported historical round IDs
+
+Blockscout:
+
+- Verified source: pending deployment
+- Read and write interface: pending deployment
 
 ## BPRO/BTC
 

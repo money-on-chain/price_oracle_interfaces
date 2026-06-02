@@ -7,6 +7,7 @@ Calculated oracles interfaces
 - [Requirements](#requirements)
 - [Quick start](#quick-start)
 - [Deployed interfaces](#deployed-interfaces)
+- [DOC/USD Aggregator (Chainlink-compatible)](#docusd-aggregator-chainlink-compatible)
 - [BPRO/USD Aggregator (Chainlink V2-only)](#bprousd-aggregator-chainlink-v2-only)
 - [Price Provider BPRO/ARS (V1)](#price-provider-bproars-v1)
 - [Price Provider BPRO/COP (V1)](#price-provider-bprocop-v1)
@@ -39,6 +40,7 @@ npx hardhat test
 | --------- | ------------------------------------------ | --------------- | ----------------------- |
 | BPRO/USD  | 0xb45cEF263FFB8bbfA91c176C722692573c743ACe |                 | BPRO/USD price provider |
 | DOC/USD   | 0xaeB119cF080FDD668E6Ba845f663912C473778F8 |                 | DOC/USD price provider  |
+| DOC/USD (Chainlink) |                                              |                 | DOC/USD Chainlink-compatible adapter |
 | USD/ARS   | 0xCf330C2FE1e8b4980Fb19A310a32E2B119e4c1B1 |                 | USD/ARS price provider  |
 | USD/COP   | 0x81852EEEA69A20D12A47A257EA4756847527E9E5 |                 | USD/COP price provider  |
 | BPRO/ARS  | 0x6979513C5De144B31dD36d87892fD6CEF95Cf59A |                 | BPRO/ARS adapter        |
@@ -47,6 +49,27 @@ npx hardhat test
 | FLIP/BPRO | 0x9425419A79f88f8cB3eC6690C8e2e231772DC4E9 |                 | FLIP/BPRO adapter       |
 | BPRO/BTC  | 0x956393D0f568a8088915596Af1Cd067720E36A26 |                 | BPRO/BTC adapter        |
 | USD/BTC   | 0x70f08c290B40B1A6C9b77b57099Aa1B114e83a01 |                 | USD/BTC adapter         |
+
+## DOC/USD Aggregator (Chainlink-compatible)
+
+This price provider returns the MoC-derived DOC/USD value through a Chainlink-shaped surface for integrations that expect `latestAnswer()` and `latestRoundData()`.
+
+- Returns **8 decimals** precision.
+- Truncates the underlying 18-decimal DOC/USD value toward zero.
+- Exposes `updatedAt` and `startedAt` as an estimate derived from the upstream publication block and the configured Rootstock average block time.
+- Uses **24 seconds** as the deployment-time average block interval.
+
+### Deploy
+
+```bash
+npx hardhat run scripts/docusd_price_chainlink_compat/deploy.js --network rskTestnet
+```
+
+### Test deployed contract
+
+The adapter exposes `latestAnswer()` and `latestRoundData()` directly. Use the deployed address from the generated config file to inspect the values after deployment.
+
+---
 
 ## BPRO/USD Aggregator (Chainlink V2-only)
 
