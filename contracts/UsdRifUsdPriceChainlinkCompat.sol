@@ -13,19 +13,12 @@ using SafeCast for uint256;
 /// - USDRIF/USD is `min(1, RoC combined coverage)` and is exposed with 8 decimals.
 ///   It normally returns 1 USD and returns less than 1 USD if RoC lacks aggregate coverage.
 /// - The underlying provider optimizes the usual fully covered path. Calculating an exact
-///   undercoverage ratio is deliberately more expensive because it requires all last-known
-///   collateral prices and the multi-collateral guard's combined calculation.
+///   undercoverage ratio is deliberately more expensive because it additionally requires
+///   the multi-collateral guard's combined calculation.
 /// - The underlying PriceProviderUsdRifUsd owns and refreshes the protocol topology cache.
-/// - Healthy-path round IDs use current block minus the provider's 20-block age estimate;
-///   they are synthetic and advance even without an oracle publication. The fallback uses
-///   the actual oldest source publication block. `updatedAt` estimates the timestamp of
-///   that block using the configured average block time; it is not a publication timestamp.
-/// - Loss of coverage is reflected immediately: the adapter takes the exact fallback path,
-///   returns the reduced price, and normally advances to the newer real publication block.
-///   On recovery, the price returns to 1 immediately, but the synthetic round ID can temporarily
-///   be lower than the last fallback round. Consumers that require monotonically increasing
-///   round IDs may therefore register recovery only after the synthetic value catches up,
-///   which can take up to 20 blocks. This tradeoff keeps normal covered reads cheaper.
+/// - Round IDs always use the actual oldest component-price publication block. `updatedAt`
+///   estimates that block's timestamp using the configured average block time; it is not an
+///   oracle-supplied publication timestamp.
 /// - `getRoundData()` serves the current round only because the sources have no historical rounds.
 contract UsdRifUsdPriceChainlinkCompat {
   uint8 internal constant OUT_DECIMALS = 8;
@@ -60,7 +53,7 @@ contract UsdRifUsdPriceChainlinkCompat {
     return DEFAULT_VERSION;
   }
 
-  /// @notice Returns the provider's estimated healthy-path or actual fallback publication block.
+  /// @notice Returns the actual oldest component-price publication block.
   function getLastPublicationBlock() public view returns (uint256) {
     return priceProvider.getLastPublicationBlock();
   }

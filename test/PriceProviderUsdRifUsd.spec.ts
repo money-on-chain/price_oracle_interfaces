@@ -7,10 +7,6 @@ const to18 = (x: string | number) => ethers.parseUnits(String(x), 18);
 const runMainnetFork = process.env.RUN_RSK_MAINNET_FORK === "1";
 const describeUnit = runMainnetFork ? describe.skip : describe;
 
-async function healthyPublicationBlock() {
-  return BigInt(Math.max(0, (await ethers.provider.getBlockNumber()) - 20));
-}
-
 async function deploySystem({
   combinedCoverage = to18("1"),
   rifValid = true,
@@ -42,7 +38,6 @@ async function deploySystem({
   const Bucket = await ethers.getContractFactory("MockMocBucket");
   const rifBucket = await Bucket.deploy([rifOracle.target]);
   const docBucket = await Bucket.deploy([docProvider.target]);
-  await rifOracle.whitelist(rifBucket.target);
   await rifBucket.setCoverage(combinedCoverage);
   await docBucket.setCoverage(combinedCoverage);
   await rifBucket.setExpectedPrices([rifPrice]);
@@ -94,7 +89,7 @@ describeUnit("PriceProviderUsdRifUsd", () => {
     const [price, valid, publicationBlock] = await provider.getPriceInfo();
     expect(price).to.equal(to18("1"));
     expect(valid).to.equal(true);
-    expect(publicationBlock).to.equal(await healthyPublicationBlock());
+    expect(publicationBlock).to.equal(100n);
 
     const [peekPrice, peekValid] = await provider.peek();
     expect(ethers.toBigInt(peekPrice)).to.equal(price);
@@ -134,11 +129,7 @@ describeUnit("PriceProviderUsdRifUsd", () => {
     await rifBucket.setCoverage(to18("12"));
     // A reverting guard makes accidental use of the expensive path observable.
     await guard.setRevertOnCalculation(true);
-    expect(await provider.getPriceInfo()).to.deep.equal([
-      to18("1"),
-      true,
-      await healthyPublicationBlock(),
-    ]);
+    expect(await provider.getPriceInfo()).to.deep.equal([to18("1"), true, 100n]);
     expect(await provider.peek()).to.deep.equal([ethers.toBeHex(to18("1"), 32), true]);
   });
 
@@ -150,35 +141,6 @@ describeUnit("PriceProviderUsdRifUsd", () => {
     await docBucket.setCoverage(ethers.MaxUint256);
     expect((await provider.getPriceInfo()).price).to.equal(to18("1"));
   });
-
-  it("uses only native coverage on the healthy path, without explicit prices or metadata", async () => {
-    const { provider, rifBucket, docBucket, rifOracle, btcOracle, guard } = await deploySystem();
-    await rifOracle.setRevertOnPriceInfo(true);
-    await btcOracle.setRevertOnPriceInfo(true);
-    await rifBucket.setRevertOnCoverage(true);
-    await docBucket.setRevertOnCoverage(true);
-    await guard.setRevertOnCalculation(true);
-    expect(await provider.peek()).to.deep.equal([ethers.toBeHex(to18("1"), 32), true]);
-    expect(await provider.getPriceInfo()).to.deep.equal([
-      to18("1"),
-      true,
-      await healthyPublicationBlock(),
-    ]);
-    expect(await provider.getLastPublicationBlock()).to.equal(await healthyPublicationBlock());
-    await networkHelpers.mine(2);
-    expect((await provider.getPriceInfo()).lastPublicationBlock).to.equal(
-      await healthyPublicationBlock(),
-    );
-  });
-
-  for (const failingBucket of ["rif", "doc"]) {
-    it(`recovers actual metadata when the ${failingBucket} native coverage call reverts`, async () => {
-      const { provider, rifBucket, docBucket } = await deploySystem();
-      await (failingBucket === "rif" ? rifBucket : docBucket).setRevertOnNativeCoverage(true);
-      expect(await provider.getPriceInfo()).to.deep.equal([to18("1"), true, 100n]);
-      expect(await provider.peek()).to.deep.equal([ethers.toBeHex(to18("1"), 32), true]);
-    });
-  }
 
   for (const staleSource of ["rif", "doc", "both"]) {
     it(`preserves validity and age on the early return with stale ${staleSource} prices`, async () => {
@@ -228,7 +190,6 @@ describeUnit("PriceProviderUsdRifUsd", () => {
     const replacementPrice = to18("0.09");
     const replacement = await PriceInfo.deploy(replacementPrice, true, 130);
     await rifBucket.setPriceProvider(0, replacement.target);
-    await replacement.whitelist(rifBucket.target);
     await rifBucket.setExpectedPrices([replacementPrice]);
     await guard.setExpectedComponentPrice(0, 0, replacementPrice);
 
@@ -242,7 +203,7 @@ describeUnit("PriceProviderUsdRifUsd", () => {
     const [price, valid, publicationBlock] = await provider.getPriceInfo();
     expect(price).to.equal(to18("1"));
     expect(valid).to.equal(true);
-    expect(publicationBlock).to.equal(await healthyPublicationBlock());
+    expect(publicationBlock).to.equal(120n);
     expect(rifPrice).not.to.equal(replacementPrice);
   });
 });
@@ -267,7 +228,6 @@ async function deployChainlinkSystem(combinedCoverage: bigint, valid = true) {
   const Bucket = await ethers.getContractFactory("MockMocBucket");
   const rifBucket = await Bucket.deploy([rifOracle.target]);
   const docBucket = await Bucket.deploy([docProvider.target]);
-  await rifOracle.whitelist(rifBucket.target);
   await rifBucket.setCoverage(combinedCoverage);
   await docBucket.setCoverage(combinedCoverage);
   await rifBucket.setExpectedPrices([rifPrice]);
@@ -289,18 +249,6 @@ async function deployChainlinkSystem(combinedCoverage: bigint, valid = true) {
 }
 
 describeUnit("UsdRifUsdPriceChainlinkCompat", () => {
-  it("uses a synthetic 20-block-old round only while all buckets are healthy", async () => {
-    const { adapter } = await deployChainlinkSystem(to18("1.75"));
-    const round = await adapter.latestRoundData();
-    const publicationBlock = await healthyPublicationBlock();
-    const block = await ethers.provider.getBlock("latest");
-    expect(round.roundId).to.equal(publicationBlock);
-    expect(round.answeredInRound).to.equal(publicationBlock);
-    expect(round.updatedAt).to.equal(BigInt(block!.timestamp) - 20n * 24n);
-    expect((await adapter.getRoundData(publicationBlock)).answer).to.equal(100000000n);
-    await networkHelpers.mine(1);
-    await expect(adapter.getRoundData(publicationBlock)).to.be.revertedWith("No data present");
-  });
   it("validates constructor arguments", async () => {
     const Factory = await ethers.getContractFactory("UsdRifUsdPriceChainlinkCompat");
 
@@ -367,7 +315,6 @@ const guardAbi = [
   "function calcCombinedCglbWithPrices(uint256[][]) view returns (uint256)",
 ];
 const bucketAbi = [
-  "function getCglb() view returns (uint256)",
   "function getTpAmount() view returns (uint256)",
   "function pegContainer(uint256) view returns (uint256 nTP, address priceProvider)",
 ];
@@ -406,16 +353,10 @@ describeFork("PriceProviderUsdRifUsd current Rootstock mainnet fork", function (
     let allValid = true;
     let oldestPublicationBlock = (1n << 256n) - 1n;
     let docBucketFound = false;
-    let nativeCovered = true;
 
     for (let j = 0; j < bucketAmount; j++) {
       const bucketAddress: string = await guard.buckets(j);
       const bucket = new ethers.Contract(bucketAddress, bucketAbi, ethers.provider);
-      try {
-        if ((await bucket.getCglb()) < ONE) nativeCovered = false;
-      } catch {
-        nativeCovered = false;
-      }
       const tpAmount = Number(await bucket.getTpAmount());
       expect(await provider.cachedBuckets(j)).to.equal(bucketAddress);
       expect(await provider.getCachedTpAmount(j)).to.equal(BigInt(tpAmount));
@@ -482,9 +423,7 @@ describeFork("PriceProviderUsdRifUsd current Rootstock mainnet fork", function (
 
     expect(info.price).to.equal(expectedPrice);
     expect(info.valid).to.equal(allValid);
-    expect(info.lastPublicationBlock).to.equal(
-      nativeCovered ? await healthyPublicationBlock() : oldestPublicationBlock,
-    );
+    expect(info.lastPublicationBlock).to.equal(oldestPublicationBlock);
     expect(info.price).to.be.greaterThan(ONE / 2n);
     expect(info.price).to.be.lessThanOrEqual(ONE);
 
@@ -525,10 +464,10 @@ describeFork("PriceProviderUsdRifUsd current Rootstock mainnet fork", function (
         await ethers.provider.send("evm_revert", [snapshot]);
       }
     }
-    console.log("USDRIF fork gas (transaction total)", { forkBlock, nativeCovered, ...gas });
+    console.log("USDRIF fork gas (transaction total)", { forkBlock, ...gas });
 
-    // No oracle publications occur on the isolated fork. Expiring both 20-block
-    // windows must take the fallback and expose the real, now-stale source age.
+    // No oracle publications occur on the isolated fork. Expiring both validity
+    // windows must preserve the last prices and their actual source age.
     await networkHelpers.mine(21);
     const staleInfo = await provider.getPriceInfo();
     expect(staleInfo.price).to.equal(expectedPrice);

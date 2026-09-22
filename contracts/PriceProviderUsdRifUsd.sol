@@ -11,8 +11,6 @@ interface IUsdRifPriceInfo {
 }
 
 interface IUsdRifBucket {
-  function getCglb() external view returns (uint256);
-
   function calcCglb(uint256[] calldata prices) external view returns (uint256);
 
   function getTpAmount() external view returns (uint256);
@@ -39,33 +37,22 @@ interface IUsdRifMultiCollateralGuard {
 /// 1 USD while RoC has sufficient collateral coverage, and falls below 1 USD when aggregate
 /// coverage is insufficient. It never reports a value above the one-dollar peg.
 ///
-/// Most calls are expected to return 1 USD. That common path asks each bucket to confirm that
-/// its own coverage is at least one and returns immediately. If any bucket is undercovered, or
-/// cannot confirm coverage because a source is stale, the provider takes the more expensive path:
-/// it retrieves every last-known price and calculates the exact combined coverage through the
-/// multi-collateral guard. Stale prices remain usable for valuation but make `valid` false.
+/// Most calls are expected to return 1 USD. The provider first reads every last-known component
+/// price, its validity, and its real publication block. As soon as each bucket's price row is
+/// complete, it calculates that bucket's coverage from those prices. If every bucket is covered,
+/// it returns one without invoking the more expensive multi-collateral guard calculation. If any
+/// bucket is undercovered, the provider uses the already-collected price matrix to calculate exact
+/// combined coverage. Stale prices remain usable for valuation but make `valid` false.
 ///
 /// The bucket/provider topology is cached so regular reads do not rediscover it from the guard.
 /// Anyone may refresh the cache after a protocol topology change. Such a change and this refresh
 /// must be atomic: the guard requires the supplied price matrix to match its current topology.
 ///
-/// The healthy path delegates pricing and validity checks to each bucket's getCglb().
-/// The fallback reads direct oracles through their typed, unrestricted getPriceInfo().
+/// Direct oracles are read through their typed, unrestricted getPriceInfo().
 /// The known DOC bucket uses its public IPriceProvider peek() and getLastPublicationBlock().
 /// There is no ABI probing or duplicated DOC pricing math.
 contract PriceProviderUsdRifUsd is IPriceProvider {
   uint256 internal constant ONE = 1e18;
-
-  /// @notice Estimated age used only after every bucket confirms valid prices and coverage >= 1.
-  /// @dev 20 is the deployed RIF and underlying BTC oracles' getValidPricePeriodInBlocks()
-  /// setting. This is an explicit age estimate, not an observed publication block.
-  /// It avoids additional oracle calls on the common path. When coverage is lost,
-  /// getPriceInfo() switches to the actual oldest publication block, which is normally
-  /// newer than this synthetic value. After coverage recovers, switching back to the
-  /// synthetic value can make the reported block temporarily decrease until it catches
-  /// up, for at most this many blocks. Review this policy if oracle validity periods or
-  /// the configured providers change.
-  uint256 public constant HEALTHY_PRICE_AGE_BLOCKS = 20;
 
   IUsdRifMultiCollateralGuard public immutable multiCollateralGuard;
   address public immutable docBucket;
@@ -88,52 +75,13 @@ contract PriceProviderUsdRifUsd is IPriceProvider {
 
   /// @notice Returns the USD value of one USDRIF, capped at 1e18 (one dollar).
   function peek() external view override returns (bytes32 price, bool valid) {
-    // Price-only consumers need neither publication metadata nor an explicit price matrix.
-    if (_isFullyCovered()) return (bytes32(ONE), true);
-    (uint256 usdRifPrice, bool priceIsValid, ) = _fallbackPriceInfo();
+    (uint256 usdRifPrice, bool priceIsValid, ) = getPriceInfo();
     return (bytes32(usdRifPrice), priceIsValid);
   }
 
-  /// @notice Returns the USD value of one USDRIF, validity, and its publication-block signal.
-  /// @dev The publication-block signal is not guaranteed to be monotonic across recovery from
-  /// undercoverage. The price itself returns to ONE as soon as every bucket confirms coverage.
+  /// @notice Returns the USD value of one USDRIF, validity, and actual oldest publication block.
   function getPriceInfo()
     public
-    view
-    returns (uint256 price, bool valid, uint256 lastPublicationBlock)
-  {
-    if (_isFullyCovered()) {
-      uint256 estimatedBlock = block.number > HEALTHY_PRICE_AGE_BLOCKS
-        ? block.number - HEALTHY_PRICE_AGE_BLOCKS
-        : 0;
-      return (ONE, true, estimatedBlock);
-    }
-    return _fallbackPriceInfo();
-  }
-
-  /// @dev Each bucket fetches its own prices and rejects invalid sources. Successful
-  /// coverage >= ONE for every bucket proves combined coverage >= ONE, without the
-  /// guard's normalization or our explicit-price bookkeeping. Empty buckets return
-  /// uint256.max and also pass. The cached topology must match the guard's topology.
-  /// A shortfall or revert is inconclusive: another bucket may cover the shortfall,
-  /// or a stale oracle may still have a usable last price. Both go to the fallback.
-  function _isFullyCovered() private view returns (bool) {
-    uint256 bucketAmount = cachedBuckets.length;
-    for (uint256 j = 0; j < bucketAmount; j++) {
-      try IUsdRifBucket(cachedBuckets[j]).getCglb() returns (uint256 coverage) {
-        if (coverage < ONE) return false;
-      } catch {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /// @dev Exceptional path: recover last prices, their actual age and aggregate validity,
-  /// then calculate coverage explicitly. Re-reading prices here is intentional: minimizing
-  /// the healthy path takes priority over the cost of this rarely needed calculation.
-  function _fallbackPriceInfo()
-    private
     view
     returns (uint256 price, bool valid, uint256 lastPublicationBlock)
   {
@@ -141,9 +89,10 @@ contract PriceProviderUsdRifUsd is IPriceProvider {
     uint256[][] memory bucketsPACtps = new uint256[][](bucketAmount);
     valid = true;
     lastPublicationBlock = type(uint256).max;
+    bool allBucketsCovered = true;
 
-    // Read every source before checking coverage: even when the answer is ONE,
-    // validity and publication age must account for all collateral price inputs.
+    // Read every source and check each bucket once its complete price row is available.
+    // Even when the answer is ONE, validity and publication age must account for all inputs.
     for (uint256 j = 0; j < bucketAmount; j++) {
       uint256 tpAmount = cachedPriceProviders[j].length;
       bucketsPACtps[j] = new uint256[](tpAmount);
@@ -175,19 +124,20 @@ contract PriceProviderUsdRifUsd is IPriceProvider {
           lastPublicationBlock = componentPublicationBlock;
         }
       }
+
+      // Check coverage as soon as this bucket's complete price row is available,
+      // avoiding a second pass over all buckets. After the first shortfall, keep
+      // collecting prices and metadata for the exact combined calculation, but skip
+      // further per-bucket checks because they cannot restore the early-return condition.
+      if (allBucketsCovered && IUsdRifBucket(cachedBuckets[j]).calcCglb(bucketsPACtps[j]) < ONE) {
+        allBucketsCovered = false;
+      }
     }
 
     // Combined coverage is a nonnegative weighted average of bucket coverages.
     // If every bucket is covered, the capped price must be ONE; normalization and
     // weighted aggregation in the guard cannot change that answer. Empty buckets
     // return uint256.max and are excluded by the guard, so also pass this check.
-    bool allBucketsCovered = true;
-    for (uint256 j = 0; j < bucketAmount; j++) {
-      if (IUsdRifBucket(cachedBuckets[j]).calcCglb(bucketsPACtps[j]) < ONE) {
-        allBucketsCovered = false;
-        break;
-      }
-    }
     if (allBucketsCovered) return (ONE, valid, lastPublicationBlock);
 
     // One undercovered bucket does not prove a global shortfall: other buckets
@@ -197,7 +147,7 @@ contract PriceProviderUsdRifUsd is IPriceProvider {
     price = combinedCoverage > ONE ? ONE : combinedCoverage;
   }
 
-  /// @notice Returns the estimated healthy-path block or actual oldest fallback publication block.
+  /// @notice Returns the actual oldest publication block among all component prices.
   function getLastPublicationBlock() external view override returns (uint256) {
     (, , uint256 lastPublicationBlock) = getPriceInfo();
     return lastPublicationBlock;

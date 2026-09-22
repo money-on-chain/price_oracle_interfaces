@@ -1,14 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import "../interfaces/IPriceProvider.sol";
-
 contract MockPriceProviderInfo {
   uint256 internal _price;
   bool internal _valid;
   uint256 internal _lastPublicationBlock;
-  mapping(address => bool) private _whitelist;
-  bool private _revertOnPriceInfo;
 
   constructor(uint256 price_, bool valid_, uint256 lastPublicationBlock_) {
     _price = price_;
@@ -23,16 +19,7 @@ contract MockPriceProviderInfo {
   }
 
   function peek() external view virtual returns (bytes32, bool) {
-    require(_whitelist[msg.sender], "Address is not whitelisted");
-    return (bytes32(_price), _valid);
-  }
-
-  function whitelist(address consumer) external {
-    _whitelist[consumer] = true;
-  }
-
-  function setRevertOnPriceInfo(bool enabled) external {
-    _revertOnPriceInfo = enabled;
+    revert("Address is not whitelisted");
   }
 
   function getPriceInfo()
@@ -40,12 +27,10 @@ contract MockPriceProviderInfo {
     view
     returns (uint256 price, bool valid, uint256 lastPublicationBlock)
   {
-    require(!_revertOnPriceInfo, "unexpected price info call");
     return (_price, _valid, _lastPublicationBlock);
   }
 
   function getLastPublicationBlock() external view returns (uint256) {
-    require(!_revertOnPriceInfo, "unexpected publication block call");
     return _lastPublicationBlock;
   }
 }
@@ -67,7 +52,6 @@ contract MockMocBucket {
   uint256 private _coverage;
   uint256[] private _expectedPrices;
   bool private _revertOnCoverage;
-  bool private _revertOnNativeCoverage;
 
   constructor(address[] memory priceProviders_) {
     _priceProviders = priceProviders_;
@@ -87,21 +71,6 @@ contract MockMocBucket {
 
   function setRevertOnCoverage(bool enabled) external {
     _revertOnCoverage = enabled;
-  }
-
-  function setRevertOnNativeCoverage(bool enabled) external {
-    _revertOnNativeCoverage = enabled;
-  }
-
-  function getCglb() external view returns (uint256) {
-    require(!_revertOnNativeCoverage, "native coverage unavailable");
-    // Match the real bucket's oracle access and invalid-price rejection. The test
-    // controls coverage independently so exact-one and shortfall cases are deterministic.
-    for (uint256 i = 0; i < _priceProviders.length; i++) {
-      (, bool valid) = IPriceProvider(_priceProviders[i]).peek();
-      require(valid, "missing provider price");
-    }
-    return _coverage;
   }
 
   function calcCglb(uint256[] calldata prices) external view returns (uint256) {

@@ -168,39 +168,25 @@ This provider returns the value of one USDRIF expressed in USD, with 18 decimals
 and returns less than `1e18` if the protocol lacks enough aggregate collateral to honor the full
 one-dollar peg.
 
-The implementation is deliberately optimized for the normal fully covered state. It asks each
-cached RoC bucket for its current coverage and returns one dollar immediately when every bucket is
-covered. If a bucket is undercovered, or its coverage check reverts because a source is stale, the
-provider takes the more expensive fail-safe path. That path obtains every last-known collateral
-price and asks the multi-collateral guard to calculate the exact combined coverage. Stale values are
-still used for valuation while the returned validity flag is `false`.
+The implementation is optimized for the normal fully covered state while always reporting real
+price metadata. It reads every component provider's last-known price, validity, and publication
+block. As soon as a bucket's price row is complete, it calculates that bucket's coverage from those
+prices. If every bucket has coverage of at least one, the provider returns one dollar without
+running the multi-collateral guard's more expensive combined calculation.
 
-The optimized path reports a synthetic publication block equal to the current block minus 20, the
-configured validity window of the deployed RIF and underlying BTC oracles. Reading the actual block
-would erase the intended gas saving. The exact fallback instead reports the actual oldest source
-publication block.
-
-This creates an intentional transition behavior. When coverage is lost, the reduced price is
-reported immediately and the real publication block will normally be newer than the synthetic one
-because prices are published continuously. When coverage recovers, the price returned by `peek()`
-and `getPriceInfo()` returns to one dollar immediately, but the synthetic publication block may be
-lower than the most recent fallback publication block until it catches up, for up to 20 blocks.
+If any bucket is undercovered, the provider continues collecting all remaining prices and metadata,
+then passes the already-built price matrix to the guard to calculate exact combined coverage. Stale
+values are still used for valuation while the returned validity flag is `false`. Both the normal and
+undercovered paths report the actual oldest component-price publication block.
 
 ## USDRIF/USD (Chainlink-compatible)
 
 Contract: `UsdRifUsdPriceChainlinkCompat`
 
 This adapter exposes the same collateral-backed USDRIF/USD value through Chainlink-shaped methods
-with 8 decimals. `latestAnswer()` reflects loss of peg and recovery immediately because it does not
-carry round metadata.
-
-For `latestRoundData()`, the publication-block signal becomes `roundId` and `answeredInRound`.
-Consequently, the switch from exact fallback metadata back to the synthetic covered-state metadata
-can temporarily make the round ID non-monotonic. Integrations that reject a round ID lower than the
-last one they accepted may register recovery only after the synthetic round catches up, which can
-take up to 20 blocks. This is a deliberate design choice favoring cheaper calls during the state in
-which RoC is expected to operate almost all the time, while making loss of coverage trip the exact
-fail-safe immediately.
+with 8 decimals. The actual oldest component-price publication block becomes `roundId` and
+`answeredInRound`; `startedAt` and `updatedAt` estimate that block's timestamp using the configured
+average Rootstock block time.
 
 ## BPRO/BTC
 
