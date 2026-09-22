@@ -31,11 +31,19 @@ interface IUsdRifMultiCollateralGuard {
 }
 
 /// @title PriceProviderUsdRifUsd
-/// @notice Exposes the collateral-backed USDRIF/USD price with 18 decimals.
+/// @notice Returns the USD value of one USDRIF, with 18 decimals.
 /// @dev
 /// The Rif-on-Chain buckets jointly back the same USDRIF supply. The guard's combined global
 /// coverage is the normalized value of all bucket collateral divided by all pegged-token
-/// liabilities. USDRIF is therefore valued as the senior claim `min(1, combined coverage)`.
+/// liabilities. The reported USDRIF/USD price is therefore `min(1, combined coverage)`: it is
+/// 1 USD while RoC has sufficient collateral coverage, and falls below 1 USD when aggregate
+/// coverage is insufficient. It never reports a value above the one-dollar peg.
+///
+/// Most calls are expected to return 1 USD. That common path asks each bucket to confirm that
+/// its own coverage is at least one and returns immediately. If any bucket is undercovered, or
+/// cannot confirm coverage because a source is stale, the provider takes the more expensive path:
+/// it retrieves every last-known price and calculates the exact combined coverage through the
+/// multi-collateral guard. Stale prices remain usable for valuation but make `valid` false.
 ///
 /// The bucket/provider topology is cached so regular reads do not rediscover it from the guard.
 /// Anyone may refresh the cache after a protocol topology change. Such a change and this refresh
@@ -74,7 +82,7 @@ contract PriceProviderUsdRifUsd is IPriceProvider {
     refreshTopology();
   }
 
-  /// @notice Returns USDRIF/USD with 18 decimals, capped at one dollar.
+  /// @notice Returns the USD value of one USDRIF, capped at 1e18 (one dollar).
   function peek() external view override returns (bytes32 price, bool valid) {
     // Price-only consumers need neither publication metadata nor an explicit price matrix.
     if (_isFullyCovered()) return (bytes32(ONE), true);
@@ -82,7 +90,7 @@ contract PriceProviderUsdRifUsd is IPriceProvider {
     return (bytes32(usdRifPrice), priceIsValid);
   }
 
-  /// @notice Returns price, validity and an estimated healthy-path or actual fallback publication block.
+  /// @notice Returns the USD value of one USDRIF, validity, and its publication-block signal.
   function getPriceInfo()
     public
     view

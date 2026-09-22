@@ -8,9 +8,13 @@ import "./PriceProviderUsdRifUsd.sol";
 using SafeCast for uint256;
 
 /// @title UsdRifUsdPriceChainlinkCompat
-/// @notice Chainlink-compatible adapter for the collateral-backed USDRIF/USD price.
+/// @notice Chainlink-compatible feed for the USD value of one USDRIF.
 /// @dev
-/// - USDRIF/USD is `min(1, combined coverage)` and is exposed with 8 decimals.
+/// - USDRIF/USD is `min(1, RoC combined coverage)` and is exposed with 8 decimals.
+///   It normally returns 1 USD and returns less than 1 USD if RoC lacks aggregate coverage.
+/// - The underlying provider optimizes the usual fully covered path. Calculating an exact
+///   undercoverage ratio is deliberately more expensive because it requires all last-known
+///   collateral prices and the multi-collateral guard's combined calculation.
 /// - The underlying PriceProviderUsdRifUsd owns and refreshes the protocol topology cache.
 /// - Healthy-path round IDs use current block minus the provider's 20-block age estimate;
 ///   they are synthetic and advance even without an oracle publication. The fallback uses
