@@ -45,7 +45,7 @@ export default {
     hardhat: {
       type: "edr-simulated",
       forking: {
-        url: configVariable("FORK_URL"), // <- needit
+        url: process.env.FORK_URL ?? configVariable("FORK_URL"), // <- needit
         blockNumber: process.env.FORK_BLOCK ? Number(process.env.FORK_BLOCK) : undefined,
         // headers y timeout optional if you use a public RPC that sometimes delays:
         // httpHeaders: { /* ... */ },
@@ -99,6 +99,7 @@ export default {
     },
     30: {
       name: "Rootstock Mainnet",
+      hardforkHistory: { shanghai: { blockNumber: 0 } },
       blockExplorers: {
         blockscout: {
           name: "Rootstock Blockscout",
