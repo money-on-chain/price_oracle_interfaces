@@ -59,8 +59,12 @@ contract PriceProviderUsdRifUsd is IPriceProvider {
   /// @notice Estimated age used only after every bucket confirms valid prices and coverage >= 1.
   /// @dev 20 is the deployed RIF and underlying BTC oracles' getValidPricePeriodInBlocks()
   /// setting. This is an explicit age estimate, not an observed publication block.
-  /// It avoids additional oracle calls on the common path. Review this policy if
-  /// oracle validity periods or the configured providers change.
+  /// It avoids additional oracle calls on the common path. When coverage is lost,
+  /// getPriceInfo() switches to the actual oldest publication block, which is normally
+  /// newer than this synthetic value. After coverage recovers, switching back to the
+  /// synthetic value can make the reported block temporarily decrease until it catches
+  /// up, for at most this many blocks. Review this policy if oracle validity periods or
+  /// the configured providers change.
   uint256 public constant HEALTHY_PRICE_AGE_BLOCKS = 20;
 
   IUsdRifMultiCollateralGuard public immutable multiCollateralGuard;
@@ -91,6 +95,8 @@ contract PriceProviderUsdRifUsd is IPriceProvider {
   }
 
   /// @notice Returns the USD value of one USDRIF, validity, and its publication-block signal.
+  /// @dev The publication-block signal is not guaranteed to be monotonic across recovery from
+  /// undercoverage. The price itself returns to ONE as soon as every bucket confirms coverage.
   function getPriceInfo()
     public
     view

@@ -11,6 +11,8 @@ Money On Chain documentation often uses `BTC` and `RBTC` interchangeably at the 
 - [BTC/USD](#btcusd)
 - [DOC/USD](#docusd)
 - [DOC/USD (Chainlink-compatible)](#docusd-chainlink-compatible)
+- [USDRIF/USD](#usdrifusd)
+- [USDRIF/USD (Chainlink-compatible)](#usdrifusd-chainlink-compatible)
 - [BPRO/BTC](#bprobtc)
 - [BPRO/USD](#bprousd)
 - [Off-chain price sources](#off-chain-price-sources)
@@ -22,6 +24,8 @@ For MoC users that need a protocol-aligned on-chain price, the recommended sourc
 - `BTC/USD` from `CoinPairPriceFree`
 - `DOC/USD` from `PriceProviderDocUsd`
 - `DOC/USD` (Chainlink-compatible) from `DocUsdPriceChainlinkCompat`
+- `USDRIF/USD` from `PriceProviderUsdRifUsd`
+- `USDRIF/USD` (Chainlink-compatible) from `UsdRifUsdPriceChainlinkCompat`
 - `BPRO/BTC` from the protocol-derived BPRO price provider
 - `BPRO/USD` from the protocol-derived BPRO price provider
 
@@ -154,6 +158,49 @@ Blockscout:
 
 - Testnet read and write interface: <https://rootstock-testnet.blockscout.com/address/0x12218198496f8e725af4FD353ab8D1e5eC6633C3?tab=read_write_contract>
 - Mainnet read and write interface: <https://rootstock.blockscout.com/address/0xe64B6D86aA766dafbB957c32B215A64Fa3A632D8?tab=read_write_contract>
+
+## USDRIF/USD
+
+Contract: `PriceProviderUsdRifUsd`
+
+This provider returns the value of one USDRIF expressed in USD, with 18 decimals. Its value is
+`min(1, Rif on Chain combined coverage)`: it normally returns `1e18`, meaning `1 USDRIF = 1 USD`,
+and returns less than `1e18` if the protocol lacks enough aggregate collateral to honor the full
+one-dollar peg.
+
+The implementation is deliberately optimized for the normal fully covered state. It asks each
+cached RoC bucket for its current coverage and returns one dollar immediately when every bucket is
+covered. If a bucket is undercovered, or its coverage check reverts because a source is stale, the
+provider takes the more expensive fail-safe path. That path obtains every last-known collateral
+price and asks the multi-collateral guard to calculate the exact combined coverage. Stale values are
+still used for valuation while the returned validity flag is `false`.
+
+The optimized path reports a synthetic publication block equal to the current block minus 20, the
+configured validity window of the deployed RIF and underlying BTC oracles. Reading the actual block
+would erase the intended gas saving. The exact fallback instead reports the actual oldest source
+publication block.
+
+This creates an intentional transition behavior. When coverage is lost, the reduced price is
+reported immediately and the real publication block will normally be newer than the synthetic one
+because prices are published continuously. When coverage recovers, the price returned by `peek()`
+and `getPriceInfo()` returns to one dollar immediately, but the synthetic publication block may be
+lower than the most recent fallback publication block until it catches up, for up to 20 blocks.
+
+## USDRIF/USD (Chainlink-compatible)
+
+Contract: `UsdRifUsdPriceChainlinkCompat`
+
+This adapter exposes the same collateral-backed USDRIF/USD value through Chainlink-shaped methods
+with 8 decimals. `latestAnswer()` reflects loss of peg and recovery immediately because it does not
+carry round metadata.
+
+For `latestRoundData()`, the publication-block signal becomes `roundId` and `answeredInRound`.
+Consequently, the switch from exact fallback metadata back to the synthetic covered-state metadata
+can temporarily make the round ID non-monotonic. Integrations that reject a round ID lower than the
+last one they accepted may register recovery only after the synthetic round catches up, which can
+take up to 20 blocks. This is a deliberate design choice favoring cheaper calls during the state in
+which RoC is expected to operate almost all the time, while making loss of coverage trip the exact
+fail-safe immediately.
 
 ## BPRO/BTC
 

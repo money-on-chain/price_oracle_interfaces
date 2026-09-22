@@ -20,6 +20,12 @@ using SafeCast for uint256;
 ///   they are synthetic and advance even without an oracle publication. The fallback uses
 ///   the actual oldest source publication block. `updatedAt` estimates the timestamp of
 ///   that block using the configured average block time; it is not a publication timestamp.
+/// - Loss of coverage is reflected immediately: the adapter takes the exact fallback path,
+///   returns the reduced price, and normally advances to the newer real publication block.
+///   On recovery, the price returns to 1 immediately, but the synthetic round ID can temporarily
+///   be lower than the last fallback round. Consumers that require monotonically increasing
+///   round IDs may therefore register recovery only after the synthetic value catches up,
+///   which can take up to 20 blocks. This tradeoff keeps normal covered reads cheaper.
 /// - `getRoundData()` serves the current round only because the sources have no historical rounds.
 contract UsdRifUsdPriceChainlinkCompat {
   uint8 internal constant OUT_DECIMALS = 8;
