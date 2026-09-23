@@ -206,18 +206,6 @@ Blockscout:
 - Testnet: <https://rootstock-testnet.blockscout.com/address/0x94DC29C3e461Bf19b285F309c8c505b325F19F4B>
 - Mainnet: <https://rootstock.blockscout.com/address/0x4C1D744C46e9A4551137Ed02Fae82c41CB90E29f>
 
-### Deployment
-
-The `UsdRifUsd` Ignition module deploys the provider and then supplies its address to the
-Chainlink-compatible adapter. Its Rootstock guard and DOC bucket parameters come from the
-[Money on Chain address book](https://github.com/money-on-chain/address-book), revision
-`78cb8086d83102ab8d4549cead7ad7f43769f1e0`.
-
-Network-specific parameters are stored in:
-
-- `ignition/parameters/usdrif-usd-rsk-testnet.json`
-- `ignition/parameters/usdrif-usd-rsk-mainnet.json`
-
 ## BPRO/BTC
 
 Address: `0xDa6E28971E01671D93246A69D8aB4aea54df2F9E`
