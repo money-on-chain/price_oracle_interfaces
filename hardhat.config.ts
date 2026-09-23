@@ -56,7 +56,7 @@ export default {
     // RSK Testnet (HTTP RPC)
     rskAlphaTestnet: {
       type: "http",
-      url: process.env.RPC_URL_RSK_TESTNET, // ej: https://public-node.testnet.rsk.co
+      url: process.env.RPC_URL_RSK_TESTNET ?? "https://public-node.testnet.rsk.co",
       chainId: 31,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       // gasPrice: 60000000n, // optional (wei)
@@ -65,7 +65,7 @@ export default {
     // RSK Testnet (HTTP RPC)
     rskTestnet: {
       type: "http",
-      url: process.env.RPC_URL_RSK_TESTNET, // ej: https://public-node.testnet.rsk.co
+      url: process.env.RPC_URL_RSK_TESTNET ?? "https://public-node.testnet.rsk.co",
       chainId: 31,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       // gasPrice: 60000000n, // optional (wei)
@@ -74,22 +74,27 @@ export default {
     // RSK Mainnet (HTTP RPC)
     rskMainnet: {
       type: "http",
-      url: process.env.RPC_URL_RSK_MAINNET,
+      url: process.env.RPC_URL_RSK_MAINNET ?? "https://public-node.rsk.co",
       chainId: 30,
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
   },
   // ✅ En HH3 use verify
   verify: {
-    // optional: disable Etherscan if you don't use it
-    etherscan: { enabled: false },
-    // optional: explicitly enable Blockscout (default: enabled)
+    // Ignition verifies through the Etherscan-compatible Rootstock Explorer API.
+    // The API requires a non-empty key but does not authenticate it.
+    etherscan: { enabled: true, apiKey: "rootstock" },
     blockscout: { enabled: true },
   },
   chainDescriptors: {
     31: {
       name: "Rootstock Testnet",
       blockExplorers: {
+        etherscan: {
+          name: "Rootstock Testnet Explorer",
+          url: "https://explorer.testnet.rootstock.io",
+          apiUrl: "https://be.explorer.testnet.rootstock.io/api/v3/etherscan",
+        },
         blockscout: {
           name: "Rootstock Testnet Blockscout",
           url: "https://rootstock-testnet.blockscout.com",
@@ -101,6 +106,11 @@ export default {
       name: "Rootstock Mainnet",
       hardforkHistory: { shanghai: { blockNumber: 0 } },
       blockExplorers: {
+        etherscan: {
+          name: "Rootstock Explorer",
+          url: "https://explorer.rootstock.io",
+          apiUrl: "https://be.explorer.rootstock.io/api/v3/etherscan",
+        },
         blockscout: {
           name: "Rootstock Blockscout",
           url: "https://rootstock.blockscout.com",

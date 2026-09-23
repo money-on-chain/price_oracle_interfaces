@@ -162,6 +162,8 @@ Blockscout:
 ## USDRIF/USD
 
 Contract: `PriceProviderUsdRifUsd`
+Testnet address: `0x6Ca13A1050Dddcc507D615Fd2306F591834D7Cdc`
+Mainnet address: `0xa5A9874559936B32CDE23591e6E7533d665118F2`
 
 This provider returns the value of one USDRIF expressed in USD, with 18 decimals. Its value is
 `min(1, Rif on Chain combined coverage)`: it normally returns `1e18`, meaning `1 USDRIF = 1 USD`,
@@ -179,14 +181,39 @@ then passes the already-built price matrix to the guard to calculate exact combi
 values are still used for valuation while the returned validity flag is `false`. Both the normal and
 undercovered paths report the actual oldest component-price publication block.
 
+Blockscout:
+
+- Testnet: <https://rootstock-testnet.blockscout.com/address/0x6Ca13A1050Dddcc507D615Fd2306F591834D7Cdc>
+- Mainnet: <https://rootstock.blockscout.com/address/0xa5A9874559936B32CDE23591e6E7533d665118F2>
+
 ## USDRIF/USD (Chainlink-compatible)
 
 Contract: `UsdRifUsdPriceChainlinkCompat`
+Testnet address: `0x94DC29C3e461Bf19b285F309c8c505b325F19F4B`
+Mainnet address: `0x4C1D744C46e9A4551137Ed02Fae82c41CB90E29f`
 
 This adapter exposes the same collateral-backed USDRIF/USD value through Chainlink-shaped methods
 with 8 decimals. The actual oldest component-price publication block becomes `roundId` and
 `answeredInRound`; `startedAt` and `updatedAt` estimate that block's timestamp using the configured
-average Rootstock block time.
+average Rootstock block time. The repository's Ignition deployment configures that estimate as
+**30 seconds**.
+
+Blockscout:
+
+- Testnet: <https://rootstock-testnet.blockscout.com/address/0x94DC29C3e461Bf19b285F309c8c505b325F19F4B>
+- Mainnet: <https://rootstock.blockscout.com/address/0x4C1D744C46e9A4551137Ed02Fae82c41CB90E29f>
+
+### Deployment
+
+The `UsdRifUsd` Ignition module deploys the provider and then supplies its address to the
+Chainlink-compatible adapter. Its Rootstock guard and DOC bucket parameters come from the
+[Money on Chain address book](https://github.com/money-on-chain/address-book), revision
+`78cb8086d83102ab8d4549cead7ad7f43769f1e0`.
+
+Network-specific parameters are stored in:
+
+- `ignition/parameters/usdrif-usd-rsk-testnet.json`
+- `ignition/parameters/usdrif-usd-rsk-mainnet.json`
 
 ## BPRO/BTC
 
