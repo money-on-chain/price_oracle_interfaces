@@ -5,8 +5,8 @@
       "typechain-types": ["./typechain-types/index.ts"]
     },
     "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "nodenext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -14,21 +14,7 @@
     "declaration": true,
     "allowImportingTsExtensions": false,
     "allowArbitraryExtensions": true,
-    "types": [
-      "node",
-      "@nomicfoundation/hardhat-chai-matchers",
-      "@nomicfoundation/hardhat-ethers",
-      "@nomicfoundation/hardhat-ignition",
-      "@nomicfoundation/hardhat-ignition-ethers",
-      "@nomicfoundation/hardhat-network-helpers",
-      "@openzeppelin/hardhat-upgrades",
-      "hardhat-ethers",
-      "hardhat",
-      "hardhat-network-helpers",
-      "chai",
-      "mocha",
-      "typechain-types"
-    ]
+    "types": ["node", "mocha", "chai", "hardhat", "@nomicfoundation/hardhat-toolbox-mocha-ethers"]
   },
   "include": ["hardhat.config.ts", "scripts", "test", "typechain-types", "types"]
 }
