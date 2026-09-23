@@ -198,6 +198,9 @@ with 8 decimals. The actual oldest component-price publication block becomes `ro
 average Rootstock block time. The repository's Ignition deployment configures that estimate as
 **30 seconds**.
 
+Since the chainlink interface does not have a validity flag, the age tolerance is to be decided by the user.
+Our suggestion for implementors is to consider a price 15 minutes old to be a warning, and 20 minutes old to be an alert.
+
 Blockscout:
 
 - Testnet: <https://rootstock-testnet.blockscout.com/address/0x94DC29C3e461Bf19b285F309c8c505b325F19F4B>
